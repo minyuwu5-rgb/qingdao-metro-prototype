@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>青岛地铁站内实时信息共享交互系统 · 可点击原型（乘客端）</title>
+<style>
+  :root{
+    --bg:#F2EEE1; --surface:#FCFAF3; --surface-2:#FFFFFF; --tint:#E9F2EB;
+    --primary:#0B6B3F; --primary-2:#15854F; --primary-tint:#E0EEE5; --primary-soft:#8FBFA6;
+    --secondary:#2FA36B; --secondary-tint:#E3F4EA; --secondary-deep:#0A5132;
+    --accent:#E5732B; --accent-tint:#FBEADC; --gold:#C9A24B;
+    --text:#1C2A23; --text-2:#54645A; --text-3:#93A096;
+    --border:#E2DDCC; --grid:#EAE5D6;
+    --ok:#2FA36B; --ok-tint:#E3F4EA; --warn:#EFA63A; --warn-tint:#FCF1DD; --danger:#E5503F; --danger-tint:#FBE7E3;
+    --shadow-sm:0 2px 8px rgba(28,42,35,.07); --shadow:0 10px 28px rgba(28,42,35,.12);
+    --r-sm:10px; --r-md:14px; --r-lg:18px; --r-xl:26px;
+    --ease:cubic-bezier(.22,.61,.36,1); --press:.14s var(--ease);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;}
+  body{font-family:"Microsoft YaHei","PingFang SC","Segoe UI",sans-serif;background:#E9E4D5;color:var(--text);padding:36px 20px 60px;}
+  .wrap{max-width:1200px;margin:0 auto;display:flex;gap:44px;justify-content:center;align-items:flex-start;flex-wrap:wrap;}
+  .head{width:100%;text-align:center;margin-bottom:6px;}
+  .head h1{font-size:26px;font-weight:800;letter-spacing:.5px;color:#13321f;}
+  .head p{margin-top:8px;font-size:14px;color:var(--text-2);}
+  .head .tags{margin-top:14px;display:flex;gap:9px;justify-content:center;flex-wrap:wrap;}
+  .head .tag{font-size:12.5px;font-weight:700;color:var(--primary);background:var(--primary-tint);border:1px solid #cfe3d4;padding:5px 13px;border-radius:999px;}
+  .phone{width:391px;height:812px;background:#0d140f;border-radius:50px;padding:9px;box-shadow:0 30px 60px rgba(20,40,28,.34);position:relative;flex:none;}
+  .screen{width:100%;height:100%;border-radius:42px;overflow:hidden;background:var(--bg);position:relative;display:flex;flex-direction:column;}
+  #pages{flex:1;position:relative;overflow:hidden;}
+  .page{position:absolute;inset:0;display:none;flex-direction:column;}
+  .page.active{display:flex;animation:fade .22s ease;}
+  @keyframes fade{from{opacity:0;transform:translateX(10px);}to{opacity:1;transform:none;}}
+  .statusbar{height:42px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 26px;font-size:14px;font-weight:700;}
+  .statusbar .sb-r{display:flex;align-items:center;gap:6px;}
+  .statusbar svg{display:block;}
+  .navbar{flex:none;height:44px;display:flex;align-items:center;justify-content:center;position:relative;}
+  .navbar .nt{font-size:16px;font-weight:800;}
+  .navbar .caps{position:absolute;right:13px;top:50%;transform:translateY(-50%);border-radius:999px;padding:3px 9px;font-size:11px;display:flex;align-items:center;gap:4px;}
+  .navbar .back{position:absolute;left:13px;top:50%;transform:translateY(-50%);display:flex;align-items:center;font-size:14px;font-weight:700;gap:2px;}
+  .pwhite{color:#fff;}
+  .pwhite .caps{border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.16);}
+  .pdark{color:var(--text);}
+  .pdark .caps{border:1px solid var(--border);background:#fff;color:var(--text-2);}
+  .pdark .back{color:var(--text);}
+  .scroll{flex:1;overflow-y:auto;background:var(--bg);}
+  .scroll::-webkit-scrollbar{display:none;}
+  .body{padding:14px 15px 16px;display:flex;flex-direction:column;gap:12px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-sm);padding:14px;}
+  .card.tap{cursor:pointer;transition:transform .12s,box-shadow .12s;}
+  .card.tap:active{transform:scale(.975);box-shadow:var(--shadow);}
+  .card h4{font-size:15px;font-weight:800;display:flex;align-items:center;gap:7px;}
+  .muted{color:var(--text-3);font-size:12px;}
+  .sub{color:var(--text-2);font-size:12.5px;}
+  .row{display:flex;justify-content:space-between;align-items:center;}
+  .chev{color:var(--text-3);}
+  .tabbar{flex:none;height:66px;background:#FCFAF3;border-top:1px solid var(--border);display:flex;padding-bottom:8px;}
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;color:var(--text-3);cursor:pointer;}
+  .tab.active{color:var(--primary);font-weight:800;}
+  .tab svg{width:23px;height:23px;}
+  .hero{background:linear-gradient(135deg,#0A5532 0%,#15854F 100%);color:#fff;flex:none;}
+  .hero .station{padding:2px 18px 18px;}
+  .hero .sname{font-size:22px;font-weight:800;letter-spacing:1px;}
+  .hero .lines{margin-top:6px;display:flex;align-items:center;gap:8px;font-size:12.5px;opacity:.96;}
+  .linechip{background:rgba(255,255,255,.2);border-radius:999px;padding:2px 9px;font-weight:700;}
+  .hero .refresh{margin-top:13px;font-size:11.5px;opacity:.92;display:flex;align-items:center;gap:5px;}
+  .alert{margin:12px 15px 0;background:var(--accent-tint);border:1px solid #f3d3b8;border-left:4px solid var(--accent);border-radius:12px;padding:11px 12px;display:flex;gap:10px;cursor:pointer;}
+  .alert .ic{flex:none;width:30px;height:30px;border-radius:9px;background:var(--accent);display:flex;align-items:center;justify-content:center;}
+  .alert .at{font-size:13px;font-weight:800;color:#B2561B;display:flex;justify-content:space-between;align-items:center;}
+  .alert .ad{font-size:12px;color:#8a5a2e;margin-top:3px;line-height:1.5;}
+  .crowd-top{display:flex;justify-content:space-between;align-items:flex-end;}
+  .level{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#B5710E;background:var(--warn-tint);padding:4px 10px;border-radius:999px;}
+  .bignum{font-size:30px;font-weight:800;margin-top:8px;}
+  .bignum small{font-size:13px;font-weight:600;color:var(--text-2);}
+  .meter{display:flex;height:10px;border-radius:999px;overflow:hidden;margin-top:12px;}
+  .meter i{display:block;height:100%;}
+  .meter-lbl{display:flex;justify-content:space-between;font-size:11px;color:var(--text-3);margin-top:6px;}
+  .wait-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .wait{border:1px solid var(--border);border-radius:13px;padding:11px 12px;cursor:pointer;transition:transform .12s;}
+  .wait:active{transform:scale(.96);}
+  .wait .wl{font-size:12px;color:var(--text-2);display:flex;align-items:center;gap:6px;}
+  .wait .wv{font-size:20px;font-weight:800;margin-top:6px;display:flex;align-items:baseline;gap:4px;}
+  .wait .wv small{font-size:11px;font-weight:600;color:var(--text-3);}
+  .dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
+  .quick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+  .q{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 2px;border-radius:12px;cursor:pointer;background:var(--surface);border:1px solid var(--border);}
+  .q:active{transform:scale(.95);}
+  .q .qi{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;}
+  .q span{font-size:11px;font-weight:700;color:var(--text-2);}
+  .foot-note{font-size:11px;color:var(--text-3);text-align:center;line-height:1.6;}
+  .map-legend{display:flex;gap:13px;align-items:center;flex-wrap:wrap;}
+  .lg{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--text-2);}
+  .lg i{width:11px;height:11px;border-radius:3px;display:inline-block;}
+  .mapwrap{background:#FBFAF3;border:1px solid var(--border);border-radius:14px;padding:8px;}
+  .mapwrap svg{width:100%;display:block;}
+  .map-tip{background:var(--secondary-tint);border:1px solid #c4e7d1;border-radius:12px;padding:10px 12px;display:flex;gap:9px;cursor:pointer;}
+  .map-tip .tt{font-size:12.5px;color:var(--secondary-deep);line-height:1.55;font-weight:700;}
+  .hotrow{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-2);}
+  .hotbadge{font-size:11px;font-weight:700;color:var(--danger);background:var(--danger-tint);padding:3px 8px;border-radius:999px;}
+  .seg{display:flex;background:var(--grid);border-radius:12px;padding:4px;gap:4px;}
+  .seg button{flex:1;border:0;background:transparent;font-family:inherit;font-size:12.5px;font-weight:700;color:var(--text-2);padding:8px 2px;border-radius:9px;cursor:pointer;line-height:1.3;}
+  .seg button.on{background:#fff;color:var(--primary);box-shadow:var(--shadow-sm);}
+  .seg button .rec{display:block;font-size:9.5px;color:var(--secondary-deep);font-weight:700;}
+  .compare{display:flex;gap:10px;}
+  .cmp{flex:1;border:1px solid var(--border);border-radius:12px;padding:10px;}
+  .cmp.best{border-color:var(--secondary);background:var(--secondary-tint);}
+  .cmp .cl{font-size:11px;color:var(--text-2);}
+  .cmp .cv{font-size:15px;font-weight:800;margin-top:4px;}
+  .cmp .cv small{font-size:10.5px;font-weight:600;color:var(--text-3);}
+  .tl{position:relative;padding-left:8px;}
+  .step{position:relative;padding:0 0 15px 26px;}
+  .step:last-child{padding-bottom:0;}
+  .step::before{content:"";position:absolute;left:7px;top:16px;bottom:0;width:2px;background:var(--border);}
+  .step:last-child::before{display:none;}
+  .step .sd{position:absolute;left:0;top:2px;width:16px;height:16px;border-radius:50%;background:var(--primary);border:3px solid var(--primary-tint);}
+  .step.alt .sd{background:var(--secondary);border-color:var(--secondary-tint);}
+  .step.acc .sd{background:var(--gold);border-color:#f0e6cd;}
+  .step .st{font-size:13.5px;font-weight:700;}
+  .step .sd2{font-size:12px;color:var(--text-2);margin-top:3px;line-height:1.5;}
+  .step .meta{display:inline-flex;gap:6px;margin-top:6px;flex-wrap:wrap;}
+  .pill{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:999px;display:inline-flex;align-items:center;gap:4px;}
+  .pill.cyan{color:var(--secondary-deep);background:var(--secondary-tint);}
+  .pill.orange{color:#B2561B;background:var(--accent-tint);}
+  .pill.gold{color:#8a6a22;background:#f4ead2;}
+  .elev{display:flex;align-items:center;gap:10px;border:1px dashed var(--primary-soft);background:var(--tint);border-radius:12px;padding:11px 12px;}
+  .elev .et{font-size:12.5px;color:var(--primary);font-weight:800;line-height:1.5;}
+  .elev .et small{display:block;color:var(--text-2);font-weight:400;font-size:11.5px;margin-top:2px;}
+  .list-item{display:flex;align-items:center;gap:12px;padding:13px 14px;background:var(--surface);border:1px solid var(--border);border-radius:14px;cursor:pointer;}
+  .list-item:active{background:var(--tint);}
+  .list-item .li{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex:none;}
+  .list-item .lt{flex:1;}
+  .list-item .lt b{font-size:13.5px;font-weight:800;display:block;}
+  .list-item .lt small{font-size:11.5px;color:var(--text-2);}
+  .switch{width:42px;height:24px;border-radius:999px;background:#cfc9b6;position:relative;transition:background .2s;flex:none;}
+  .switch.on{background:var(--primary);}
+  .switch i{position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .2s;}
+  .switch.on i{left:20px;}
+  .lang-opts{display:flex;gap:8px;flex-wrap:wrap;}
+  .lang-opts button{border:1px solid var(--border);background:#fff;font-family:inherit;font-size:12.5px;font-weight:700;color:var(--text-2);padding:8px 14px;border-radius:999px;cursor:pointer;}
+  .lang-opts button.on{background:var(--primary);color:#fff;border-color:var(--primary);}
+  .overlay{position:absolute;inset:0;z-index:50;background:var(--bg);display:none;flex-direction:column;animation:slideup .24s ease;}
+  .overlay.active{display:flex;}
+  @keyframes slideup{from{transform:translateY(100%);}to{transform:none;}}
+  .ov-hero{background:linear-gradient(135deg,#0A5532,#15854F);color:#fff;flex:none;}
+  .ov-hero .ov-body{padding:0 18px 18px;}
+  .ov-hero .ov-title{font-size:19px;font-weight:800;}
+  .ov-hero .ov-sub{font-size:12px;opacity:.9;margin-top:5px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:12.5px;font-weight:800;color:var(--text-2);margin-bottom:7px;}
+  .input{border:1px solid var(--border);background:#fff;border-radius:11px;padding:11px 12px;font-size:13px;color:var(--text);}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;}
+  .chips button{border:1px solid var(--border);background:#fff;font-family:inherit;font-size:12px;font-weight:700;color:var(--text-2);padding:7px 12px;border-radius:999px;cursor:pointer;}
+  .chips button.on{background:var(--primary-tint);color:var(--primary);border-color:var(--primary-soft);}
+  .photo-add{height:120px;border:1.5px dashed var(--primary-soft);border-radius:13px;background:var(--tint);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;color:var(--primary);font-weight:700;font-size:12.5px;cursor:pointer;}
+  .btn-primary{margin-top:auto;background:var(--primary);color:#fff;border:0;font-family:inherit;font-size:15px;font-weight:800;padding:14px;border-radius:14px;cursor:pointer;box-shadow:0 8px 18px rgba(11,107,63,.25);}
+  .btn-ghost{background:#fff;color:var(--primary);border:1px solid var(--primary-soft);font-family:inherit;font-size:13.5px;font-weight:700;padding:12px;border-radius:13px;cursor:pointer;}
+  .impact li{list-style:none;display:flex;gap:9px;font-size:12.5px;color:var(--text-2);line-height:1.5;margin-bottom:9px;}
+  .impact li::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent);margin-top:6px;flex:none;}
+  /* ===== 多语言旅游精简版 ===== */
+  #tourRoot{position:absolute;inset:0;z-index:75;background:#F2EEE1;display:none;flex-direction:column;}
+  #tourRoot.active{display:flex;animation:fade .2s ease;}
+  .tview{display:none;flex-direction:column;flex:1;overflow:hidden;}
+  .tview.active{display:flex;}
+  .ttop{flex:none;background:linear-gradient(135deg,#0A5532,#15854F);color:#fff;padding:10px 14px 13px;}
+  .ttop .trow1{display:flex;align-items:center;gap:8px;}
+  .ttop .tx{font-size:13px;font-weight:800;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.32);border-radius:999px;padding:6px 12px;cursor:pointer;color:#fff;display:flex;align-items:center;gap:5px;}
+  .ttop .tlng{display:flex;gap:6px;margin-left:auto;}
+  .tlng button{border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.1);color:#fff;font-family:inherit;font-size:11.5px;font-weight:700;padding:5px 9px;border-radius:999px;cursor:pointer;}
+  .tlng button.on{background:#fff;color:#0B6B3F;border-color:#fff;}
+  .ttop .tstation{font-size:20px;font-weight:800;margin-top:11px;letter-spacing:.2px;}
+  .ttop .tlines{font-size:11.5px;opacity:.92;margin-top:4px;}
+  .tscroll{flex:1;overflow-y:auto;padding:13px 14px 14px;display:flex;flex-direction:column;gap:11px;}
+  .tscroll::-webkit-scrollbar{display:none;}
+  .tbusypill{display:flex;align-items:center;gap:11px;background:#fff;border:1px solid var(--border);border-radius:15px;padding:13px 14px;box-shadow:var(--shadow-sm);}
+  .tbusypill .bi{width:44px;height:44px;border-radius:12px;flex:none;display:flex;align-items:center;justify-content:center;}
+  .tbusypill .bq{font-size:11.5px;color:var(--text-3);font-weight:700;}
+  .tbusypill .bl{font-size:19px;font-weight:800;margin-top:2px;}
+  .tbusypill .bd{font-size:11.5px;color:var(--text-2);margin-top:2px;line-height:1.45;}
+  .tsech{font-size:13px;font-weight:800;color:var(--primary);display:flex;align-items:center;gap:6px;}
+  .tcard{display:flex;gap:12px;background:#fff;border:1px solid var(--border);border-radius:15px;padding:13px 14px;box-shadow:var(--shadow-sm);cursor:pointer;transition:transform .12s;}
+  .tcard:active{transform:scale(.98);}
+  .tcard .si{width:46px;height:46px;border-radius:13px;flex:none;display:flex;align-items:center;justify-content:center;}
+  .tcard .si svg{width:24px;height:24px;}
+  .tcard .sn{font-size:14.5px;font-weight:800;line-height:1.25;}
+  .tcard .sd{font-size:11.5px;color:var(--text-2);margin-top:3px;line-height:1.5;}
+  .tcard .sgo{margin-top:7px;display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;color:var(--primary);background:var(--primary-tint);border-radius:999px;padding:4px 10px;}
+  .tcard.hl{border-color:#A9DCC1;background:var(--secondary-tint);}
+  .trecrow{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:11.5px;color:var(--text-2);padding:11px 13px;background:#fff;border:1px solid var(--border);border-radius:13px;}
+  .trecrow b{font-size:13px;font-weight:800;color:var(--text);display:block;margin-bottom:2px;}
+  .trecrow .ttime{font-size:13.5px;font-weight:800;color:var(--primary);white-space:nowrap;}
+  .tfirstlast{display:flex;gap:10px;}
+  .tfl{flex:1;background:#fff;border:1px solid var(--border);border-radius:13px;padding:11px 12px;}
+  .tfl .l{font-size:11.5px;font-weight:800;color:var(--text-2);display:flex;align-items:center;gap:6px;}
+  .tfl .v{font-size:14px;font-weight:800;margin-top:6px;}
+  .tfl .v small{font-size:10.5px;color:var(--text-3);font-weight:600;}
+  .tbig{display:block;width:100%;text-align:center;border:0;font-family:inherit;font-weight:800;border-radius:15px;padding:16px;cursor:pointer;}
+  .tbig.red{background:#E5503F;color:#fff;font-size:18px;box-shadow:0 8px 18px rgba(229,80,63,.28);}
+  .tbig.red svg{width:22px;height:22px;vertical-align:-4px;margin-right:8px;}
+  .tnote{font-size:11px;color:var(--text-3);line-height:1.6;text-align:center;}
+  .ttabbar{flex:none;height:62px;background:#FCFAF3;border-top:1px solid var(--border);display:flex;padding-bottom:6px;}
+  .ttab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10.5px;color:var(--text-3);cursor:pointer;}
+  .ttab.on{color:var(--primary);font-weight:800;}
+  .ttab svg{width:22px;height:22px;}
+  .toast{position:absolute;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);background:rgba(20,32,25,.92);color:#fff;font-size:12.5px;padding:10px 16px;border-radius:12px;opacity:0;pointer-events:none;transition:.25s;z-index:90;white-space:nowrap;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .side{width:300px;flex:none;padding-top:8px;}
+  .side h3{font-size:15px;font-weight:800;color:#13321f;margin-bottom:4px;}
+  .side p{font-size:12px;color:var(--text-2);line-height:1.6;margin-bottom:14px;}
+  .navlist{display:flex;flex-direction:column;gap:9px;}
+  .navlist button{text-align:left;border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:12px 13px;font-family:inherit;cursor:pointer;transition:.15s;}
+  .navlist button:active{transform:scale(.98);}
+  .navlist button b{font-size:13px;font-weight:800;color:var(--primary);display:block;}
+  .navlist button small{font-size:11.5px;color:var(--text-2);}
+  .legendbox{margin-top:18px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;}
+  .legendbox h4{font-size:13px;font-weight:800;margin-bottom:9px;}
+  .legendbox .l{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--text-2);margin-bottom:7px;}
+  /* ===== 适老化大字版 ===== */
+  #elderRoot{position:absolute;inset:0;z-index:70;background:#FDFBF4;display:none;flex-direction:column;}
+  #elderRoot.active{display:flex;animation:fade .2s ease;}
+  #elderRoot .eview{animation:none;}
+  .eview{display:none;flex-direction:column;flex:1;overflow:hidden;}
+  .eview.active{display:flex;animation:fade .2s ease;}
+  .eview .escroll{flex:1;overflow-y:auto;padding:0 0 22px;}
+  .eview .escroll::-webkit-scrollbar{display:none;}
+  .elder-top{flex:none;background:linear-gradient(135deg,#0A5532,#15854F);color:#fff;padding:12px 18px 18px;}
+  .elder-top .back{display:inline-flex;align-items:center;gap:4px;font-size:15px;font-weight:700;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.5);border-radius:999px;padding:6px 14px;cursor:pointer;}
+  .elder-top .back:active{background:rgba(255,255,255,.28);}
+  .elder-station{font-size:28px;font-weight:800;margin-top:14px;letter-spacing:1px;line-height:1.2;}
+  .elder-lines{font-size:16px;margin-top:6px;opacity:.95;}
+  .e-banner{margin:16px 18px 0;border-radius:18px;padding:20px 22px;}
+  .e-banner .q{font-size:18px;font-weight:700;}
+  .e-banner .big{font-size:36px;font-weight:800;line-height:1.15;margin:6px 0 8px;}
+  .e-banner .desc{font-size:17px;line-height:1.5;}
+  .e-banner.warn{background:#FFF3DB;color:#8a5a10;border:2px solid #EFCB7E;}
+  .e-alert{margin:16px 18px 0;background:#FDEDE3;border:2px solid #E5732B;border-radius:18px;padding:16px 18px;display:flex;gap:14px;align-items:center;}
+  .e-alert .ea-ic{width:48px;height:48px;border-radius:12px;background:#E5732B;display:flex;align-items:center;justify-content:center;flex:none;}
+  .e-alert .ea-t{font-size:18px;font-weight:800;color:#A9441B;}
+  .e-alert .ea-d{font-size:17px;color:#7a4a25;line-height:1.45;margin-top:4px;}
+  .e-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:16px 18px 0;}
+  .e-btn{border:0;border-radius:20px;padding:20px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;font-family:inherit;cursor:pointer;min-height:108px;}
+  .e-btn:active{transform:scale(.96);}
+  .e-btn svg{width:36px;height:36px;}
+  .e-btn span{font-size:20px;font-weight:800;line-height:1.2;text-align:center;}
+  .e-btn.green{background:#0B6B3F;color:#fff;box-shadow:0 8px 18px rgba(11,107,63,.28);}
+  .e-btn.teal{background:#2FA36B;color:#fff;}
+  .e-btn.gold{background:#C9A24B;color:#fff;}
+  .e-btn.red{background:#E5503F;color:#fff;box-shadow:0 8px 18px rgba(229,80,63,.25);}
+  .e-btn.ghost{background:#fff;color:#0B6B3F;border:2px solid #8FBFA6;}
+  .e-foot{margin:16px 18px 0;font-size:15px;color:#54645A;line-height:1.5;text-align:center;background:#fff;border:1px solid #E2DDCC;border-radius:14px;padding:14px;}
+  .e-time{margin:0 18px 14px;background:#E3F4EA;border:2px solid #A9DCC1;border-radius:18px;padding:18px 20px;text-align:center;}
+  .e-time .t{font-size:17px;color:#0B5E36;font-weight:700;}
+  .e-time .b{font-size:34px;font-weight:800;color:#0B6B3F;line-height:1.2;margin:4px 0;}
+  .e-step{display:flex;gap:16px;align-items:flex-start;background:#fff;border:1px solid #E2DDCC;border-radius:18px;padding:18px;margin:0 18px 14px;}
+  .e-step .num{flex:none;width:44px;height:44px;border-radius:50%;background:#0B6B3F;color:#fff;font-size:22px;font-weight:800;display:flex;align-items:center;justify-content:center;}
+  .e-step .st{font-size:20px;font-weight:800;color:#10271A;}
+  .e-step .sd{font-size:16px;color:#54645A;line-height:1.5;margin-top:4px;}
+  .e-info{margin:0 18px 14px;background:#fff;border:1px solid #E2DDCC;border-radius:18px;padding:18px;}
+  .e-info .ih{display:flex;align-items:center;gap:12px;font-size:19px;font-weight:800;color:#10271A;}
+  .e-info .ic{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex:none;}
+  .e-info .ic svg{width:26px;height:26px;}
+  .e-info .id{font-size:16px;color:#54645A;line-height:1.5;margin-top:8px;padding-left:56px;}
+  .e-tag{display:inline-block;font-size:14px;font-weight:800;padding:3px 10px;border-radius:999px;margin-left:auto;}
+  .e-tag.run{color:#0B6B3F;background:#E3F4EA;}
+  .e-tag.mid{color:#9c6210;background:#FCF1DD;}
+  .e-call{width:calc(100% - 36px);margin:0 18px 16px;border:0;border-radius:20px;background:#E5503F;color:#fff;font-family:inherit;padding:26px 0;min-height:96px;font-size:24px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:12px;cursor:pointer;box-shadow:0 10px 22px rgba(229,80,63,.3);}
+  .e-call:active{transform:scale(.98);}
+  .e-call svg{width:30px;height:30px;}
+  @media(max-width:760px){.side{width:100%;order:3;}.navlist{display:grid;grid-template-columns:1fr 1fr;gap:8px;}}
+
+  /* ===== 视觉与交互精修增强（不改变布局 / 信息架构） ===== */
+  /* 数字等宽对齐：客流、分钟、时长刷新时不跳动 */
+  .bignum,.wv,.cmp .cv,.ttime,.e-num{font-variant-numeric:tabular-nums;}
+  /* 补齐此前缺失的按压反馈，统一按压时长与曲线 */
+  .tab,.seg button,.alert,.map-tip{transition-duration:.18s;transition-timing-function:var(--ease);}
+  .tab:active,.seg button:active,.alert:active,.map-tip:active{transform:scale(.97);}
+  /* 其余可点击元素补齐按压反馈（统一曲线与时长） */
+  .lang-opts button,.chips button,.photo-add,.tbig,.ttop .tx,.switch,.input{
+    transition:transform var(--press),background var(--press),border-color var(--press),box-shadow var(--press);}
+  .lang-opts button:active,.chips button:active,.photo-add:active,.tbig:active,.ttop .tx:active{transform:scale(.96);}
+  .switch:active{transform:scale(.9);}
+  .input:active{transform:scale(.99);background:var(--tint);}
+  /* 绝对定位的返回按钮：保留居中 transform 再叠加缩放 */
+  .navbar .back:active{transform:translateY(-50%) scale(.94);}
+  /* 键盘可达：统一焦点环 */
+  :focus-visible{outline:2px solid var(--primary-2);outline-offset:2px;border-radius:6px;}
+  /* 长文本自然换行，避免生硬断行 */
+  .sub,.ad,.map-tip .tt,.sd2,.st{text-wrap:pretty;}
+  /* 尊重系统减少动效偏好 */
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <h1>青岛地铁站内实时信息共享交互系统 · 乘客端可点击原型</h1>
+    <p>免登录微信小程序 · 纯视觉无语音 · NFC/二维码触发 · 数据只读对接既有 AFC/BAS/PIS · 客流为情景示例数据</p>
+    <div class="tags">
+      <span class="tag">青岛地铁深绿 #0B6B3F</span><span class="tag">米白 #F2EEE1</span>
+      <span class="tag">可点击跳转</span><span class="tag">4 主页 + 3 二级页</span><span class="tag">375 × 812</span>
+    </div>
+  </div>
+
+  <!-- 手机 -->
+  <div class="phone"><div class="screen">
+    <div id="pages">
+
+      <!-- 1 总览 -->
+      <div class="page active" data-page="home">
+        <div class="hero">
+          <div class="statusbar pwhite"><span>9:41</span>
+            <span class="sb-r">
+              <svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="7" width="3" height="4" rx="1" fill="#fff"/><rect x="4.5" y="5" width="3" height="6" rx="1" fill="#fff"/><rect x="9" y="2.5" width="3" height="8.5" rx="1" fill="#fff"/><rect x="13.5" y="0" width="3" height="11" rx="1" fill="#fff"/></svg>
+              <svg width="25" height="12" viewBox="0 0 25 12"><rect x=".5" y=".5" width="21" height="11" rx="3" fill="none" stroke="#fff" opacity=".7"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="#fff"/><rect x="22.5" y="4" width="2" height="4" rx="1" fill="#fff" opacity=".7"/></svg>
+            </span>
+          </div>
+          <div class="navbar pwhite"><span class="nt">本站总览</span>
+            <span class="caps"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/></svg>免登录</span>
+          </div>
+          <div class="station">
+            <div class="sname">五四广场站</div>
+            <div class="lines"><span class="linechip">2 号线</span><span class="linechip">3 号线</span><span>换乘站 · A 层枢纽</span></div>
+            <div class="refresh">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 3v6h-6"/></svg>
+              数据更新于 09:40 · 约 1–5 分钟自动刷新 · 仅读取既有数据
+            </div>
+          </div>
+        </div>
+        <div class="scroll">
+          <div class="alert" onclick="openOverlay('alert')">
+            <div class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></div>
+            <div style="flex:1">
+              <div class="at">站内突发 · 置顶<span style="font-weight:600;color:#b98a5b;font-size:11px;">站务 09:32 ›</span></div>
+              <div class="ad">3 号线 B1 上行扶梯临时检修，请改走步行楼梯或就近无障碍电梯，预计 10:30 恢复。</div>
+            </div>
+          </div>
+          <div class="body">
+            <div class="card tap" onclick="openOverlay('crowd')">
+              <div class="crowd-top">
+                <h4><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0B6B3F" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9"/></svg>当前在站客流</h4>
+                <span class="level"><span class="dot" style="background:#EFA63A"></span>客流较高</span>
+              </div>
+              <div class="bignum">约 4,200 <small>人在站</small></div>
+              <div class="meter"><i style="width:42%;background:#2FA36B"></i><i style="width:30%;background:#EFA63A"></i><i style="width:28%;background:#E5503F"></i></div>
+              <div class="meter-lbl"><span>畅通</span><span>较挤</span><span>当前区间 → 拥挤</span></div>
+            </div>
+            <div class="card">
+              <h4 style="margin-bottom:10px;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0B6B3F" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>各点位预计等待时长 <span class="muted" style="margin-left:auto;">点卡片看详情</span></h4>
+              <div class="wait-grid">
+                <div class="wait" onclick="openPoint('in')"><div class="wl"><span class="dot" style="background:#2FA36B"></span>进站闸机</div><div class="wv" style="color:#2FA36B">约 2<small>分钟</small></div></div>
+                <div class="wait" onclick="openPoint('out')"><div class="wl"><span class="dot" style="background:#EFA63A"></span>出站闸机</div><div class="wv" style="color:#EFA63A">约 4<small>分钟</small></div></div>
+                <div class="wait" onclick="openPoint('up')"><div class="wl"><span class="dot" style="background:#E5503F"></span>上行扶梯</div><div class="wv" style="color:#E5503F">约 6<small>分钟</small></div></div>
+                <div class="wait" onclick="openPoint('down')"><div class="wl"><span class="dot" style="background:#2FA36B"></span>下行扶梯</div><div class="wv" style="color:#2FA36B">约 1<small>分钟</small></div></div>
+              </div>
+            </div>
+            <div class="quick">
+              <div class="q" onclick="go('heat')"><div class="qi" style="background:var(--primary-tint);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B6B3F" stroke-width="2"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg></div><span>热力图</span></div>
+              <div class="q" onclick="go('transfer')"><div class="qi" style="background:var(--secondary-tint);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0A5132" stroke-width="2"><circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="5" r="2.5"/><path d="M8 17 16 7"/></svg></div><span>换乘</span></div>
+              <div class="q" onclick="go('mine')"><div class="qi" style="background:#f4ead2;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8a6a22" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="2"/><circle cx="12" cy="9" r="1.6"/><path d="M9 15h6"/></svg></div><span>无障碍</span></div>
+              <div class="q" onclick="go('mine')"><div class="qi" style="background:var(--accent-tint);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B2561B" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8l9 7a3 3 0 0 0 4 0l9-7z"/><path d="M23 6l-11 9L1 6"/></svg></div><span>多语言</span></div>
+            </div>
+            <div class="card tap row" onclick="toast('今日 2 号线、3 号线均正常运营')">
+              <div><h4 style="font-size:13.5px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2FA36B" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg>运营状态</h4>
+                <div class="sub" style="margin-top:4px;">2 号线、3 号线运营正常 · 首 06:15 / 末 22:40</div></div>
+              <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+            </div>
+            <div class="foot-note">全程无语音、仅视觉提示 · 无手机乘客请以站内导视牌与既有显示屏为准</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2 热力 -->
+      <div class="page" data-page="heat">
+        <div class="statusbar pdark"><span>9:41</span>
+          <span class="sb-r" style="color:#1C2A23">
+            <svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="7" width="3" height="4" rx="1" fill="#1C2A23"/><rect x="4.5" y="5" width="3" height="6" rx="1" fill="#1C2A23"/><rect x="9" y="2.5" width="3" height="8.5" rx="1" fill="#1C2A23"/><rect x="13.5" y="0" width="3" height="11" rx="1" fill="#1C2A23"/></svg>
+            <svg width="25" height="12" viewBox="0 0 25 12"><rect x=".5" y=".5" width="21" height="11" rx="3" fill="none" stroke="#1C2A23" opacity=".5"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="#1C2A23"/><rect x="22.5" y="4" width="2" height="4" rx="1" fill="#1C2A23"/></svg>
+          </span>
+        </div>
+        <div class="navbar pdark"><span class="nt">站内热力平面图</span>
+          <span class="caps"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#54645A" stroke-width="2.2"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/></svg>免登录</span></div>
+        <div class="scroll"><div class="body">
+          <div class="card" style="padding:12px 14px;">
+            <div class="row"><h4>五四广场站</h4><span class="muted">09:40 更新</span></div>
+            <div class="seg" style="margin-top:11px;">
+              <button class="on" onclick="switchFloor(0,this)">站厅层</button>
+              <button onclick="switchFloor(1,this)">2 号线站台</button>
+              <button onclick="switchFloor(2,this)">3 号线站台</button>
+            </div>
+            <div class="map-legend" style="margin-top:11px;">
+              <span class="lg"><i style="background:#2FA36B"></i>畅通</span>
+              <span class="lg"><i style="background:#EFA63A"></i>较挤</span>
+              <span class="lg"><i style="background:#E5503F"></i>拥挤</span>
+              <span class="lg" style="margin-left:auto;"><i style="background:repeating-linear-gradient(90deg,#2FA36B 0 4px,transparent 4px 8px);height:3px;"></i>低拥堵路径</span>
+            </div>
+          </div>
+          <div class="card" style="padding:10px;">
+            <div class="mapwrap" id="floor0">
+              <svg viewBox="0 0 343 300">
+                <rect x="18" y="30" width="120" height="90" rx="10" fill="#E3F4EA" stroke="#A9DCC1"/>
+                <rect x="205" y="30" width="120" height="90" rx="10" fill="#FBE7E3" stroke="#EFB6AC"/>
+                <rect x="138" y="52" width="67" height="46" rx="8" fill="#FCF1DD" stroke="#ECCE94"/>
+                <text x="78" y="70" text-anchor="middle" font-size="11" fill="#127a49" font-weight="700">A 站厅</text>
+                <text x="265" y="70" text-anchor="middle" font-size="11" fill="#B23222" font-weight="700">B 站厅</text>
+                <text x="171" y="72" text-anchor="middle" font-size="10" fill="#9c6210" font-weight="700">换乘通道</text>
+                <text x="78" y="90" text-anchor="middle" font-size="10" fill="#2FA36B">畅通</text>
+                <text x="265" y="90" text-anchor="middle" font-size="10" fill="#E5503F">拥挤</text>
+                <text x="171" y="90" text-anchor="middle" font-size="10" fill="#EFA63A">较挤</text>
+                <rect x="30" y="140" width="125" height="34" rx="8" fill="#E3F4EA" stroke="#A9DCC1"/>
+                <rect x="188" y="140" width="125" height="34" rx="8" fill="#FCF1DD" stroke="#ECCE94"/>
+                <text x="92" y="161" text-anchor="middle" font-size="10.5" fill="#127a49" font-weight="700">A 区闸机 · 约2分钟</text>
+                <text x="250" y="161" text-anchor="middle" font-size="10.5" fill="#9c6210" font-weight="700">B 区闸机 · 约4分钟</text>
+                <rect x="18" y="200" width="307" height="40" rx="9" fill="#E3F4EA" stroke="#A9DCC1"/>
+                <rect x="18" y="250" width="307" height="40" rx="9" fill="#FBE7E3" stroke="#EFB6AC"/>
+                <text x="30" y="225" font-size="10.5" fill="#127a49" font-weight="700">2 号线站台（下楼）</text>
+                <text x="30" y="275" font-size="10.5" fill="#B23222" font-weight="700">3 号线站台（下楼）</text>
+                <rect x="150" y="178" width="42" height="20" rx="5" fill="#E3F4EA" stroke="#8fd0ad"/>
+                <text x="171" y="192" text-anchor="middle" font-size="9" fill="#0A5132" font-weight="700">电梯</text>
+                <rect x="150" y="241" width="42" height="8" rx="3" fill="#EFA63A"/>
+                <circle cx="28" cy="30" r="8" fill="#fff" stroke="#93A096"/><text x="28" y="33" text-anchor="middle" font-size="9.5" fill="#54645A" font-weight="700">A</text>
+                <circle cx="315" cy="30" r="8" fill="#fff" stroke="#93A096"/><text x="315" y="33" text-anchor="middle" font-size="9.5" fill="#54645A" font-weight="700">C</text>
+                <path d="M78 120 L78 140 L92 174 L92 200 L171 240" fill="none" stroke="#2FA36B" stroke-width="3" stroke-dasharray="6 6" stroke-linecap="round"/>
+                <circle cx="171" cy="240" r="4" fill="#2FA36B"/>
+              </svg>
+            </div>
+            <div class="mapwrap" id="floor1" style="display:none;">
+              <svg viewBox="0 0 343 300">
+                <rect x="18" y="40" width="307" height="150" rx="12" fill="#E3F4EA" stroke="#A9DCC1"/>
+                <text x="171" y="72" text-anchor="middle" font-size="13" fill="#127a49" font-weight="800">2 号线站台 · 畅通</text>
+                <text x="171" y="94" text-anchor="middle" font-size="11" fill="#127a49">当前候车人数较少，可在 A 端上车</text>
+                <line x1="40" y1="130" x2="303" y2="130" stroke="#2FA36B" stroke-width="2" stroke-dasharray="8 8"/>
+                <rect x="40" y="200" width="140" height="60" rx="10" fill="#E3F4EA" stroke="#A9DCC1"/>
+                <rect x="193" y="200" width="132" height="60" rx="10" fill="#E3F4EA" stroke="#A9DCC1"/>
+                <text x="110" y="235" text-anchor="middle" font-size="11" fill="#127a49" font-weight="700">A 端候车区 · 畅通</text>
+                <text x="259" y="235" text-anchor="middle" font-size="11" fill="#127a49" font-weight="700">无障碍电梯 · 畅通</text>
+              </svg>
+            </div>
+            <div class="mapwrap" id="floor2" style="display:none;">
+              <svg viewBox="0 0 343 300">
+                <rect x="18" y="40" width="307" height="150" rx="12" fill="#FBE7E3" stroke="#EFB6AC"/>
+                <text x="171" y="72" text-anchor="middle" font-size="13" fill="#B23222" font-weight="800">3 号线站台 · 拥挤</text>
+                <text x="171" y="94" text-anchor="middle" font-size="11" fill="#B23222">B 端较挤，建议至 A 端或中部候车</text>
+                <rect x="40" y="120" width="120" height="50" rx="10" fill="#FCF1DD" stroke="#ECCE94"/>
+                <rect x="175" y="120" width="150" height="50" rx="10" fill="#FBE7E3" stroke="#EFB6AC"/>
+                <text x="100" y="150" text-anchor="middle" font-size="11" fill="#9c6210" font-weight="700">A 端 · 较挤</text>
+                <text x="250" y="150" text-anchor="middle" font-size="11" fill="#B23222" font-weight="700">B 端 · 拥挤</text>
+                <rect x="40" y="200" width="120" height="60" rx="10" fill="#E3F4EA" stroke="#A9DCC1"/>
+                <rect x="175" y="200" width="150" height="60" rx="10" fill="#FCF1DD" stroke="#ECCE94"/>
+                <text x="100" y="235" text-anchor="middle" font-size="11" fill="#127a49" font-weight="700">无障碍电梯 · 畅通</text>
+                <text x="250" y="235" text-anchor="middle" font-size="11" fill="#9c6210" font-weight="700">中部排队 · 较挤</text>
+              </svg>
+            </div>
+          </div>
+          <div class="map-tip" onclick="go('transfer')">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0A5132" stroke-width="2" style="flex:none"><circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="5" r="2.5"/><path d="M8 17 16 7"/></svg>
+            <div class="tt">已标出低拥堵换乘路径（绿色虚线）：A 站厅 → A 区闸机 → 无障碍电梯，避开 B 站厅与换乘通道，约多 80 米、少排队。点此看换乘指引 ›</div>
+          </div>
+          <div class="hotrow"><span class="hotbadge">最拥挤</span>B 站厅、换乘通道、3 号线站台 · 建议错峰或绕行</div>
+        </div></div>
+      </div>
+
+      <!-- 3 换乘 -->
+      <div class="page" data-page="transfer">
+        <div class="statusbar pdark"><span>9:41</span>
+          <span class="sb-r" style="color:#1C2A23">
+            <svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="7" width="3" height="4" rx="1" fill="#1C2A23"/><rect x="4.5" y="5" width="3" height="6" rx="1" fill="#1C2A23"/><rect x="9" y="2.5" width="3" height="8.5" rx="1" fill="#1C2A23"/><rect x="13.5" y="0" width="3" height="11" rx="1" fill="#1C2A23"/></svg>
+            <svg width="25" height="12" viewBox="0 0 25 12"><rect x=".5" y=".5" width="21" height="11" rx="3" fill="none" stroke="#1C2A23" opacity=".5"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="#1C2A23"/><rect x="22.5" y="4" width="2" height="4" rx="1" fill="#1C2A23"/></svg>
+          </span>
+        </div>
+        <div class="navbar pdark"><span class="nt">换乘指引</span>
+          <span class="caps"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#54645A" stroke-width="2.2"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/></svg>免登录</span></div>
+        <div class="scroll"><div class="body">
+          <div class="card tap row" onclick="toast('可按目的地搜索换乘，本原型以 2→3 号线为例')">
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;">
+              <span class="linechip" style="background:var(--primary-tint);color:var(--primary);padding:3px 10px;">2 号线</span>
+              <svg width="18" height="14" viewBox="0 0 24 24" fill="none" stroke="#93A096" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              <span class="linechip" style="background:var(--secondary-tint);color:var(--secondary-deep);padding:3px 10px;">3 号线</span>
+            </div>
+            <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+          </div>
+          <div class="seg">
+            <button onclick="switchPlan('normal',this)">常规方案</button>
+            <button class="on" onclick="switchPlan('low',this)">低拥堵<span class="rec">推荐</span></button>
+            <button onclick="switchPlan('access',this)">无障碍</button>
+          </div>
+          <div class="compare" id="compareBox"></div>
+          <div class="card"><div class="tl" id="tlBox"></div></div>
+          <div class="elev" id="elevBox"></div>
+        </div></div>
+      </div>
+
+      <!-- 4 我的 -->
+      <div class="page" data-page="mine">
+        <div class="statusbar pdark"><span>9:41</span>
+          <span class="sb-r" style="color:#1C2A23">
+            <svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="7" width="3" height="4" rx="1" fill="#1C2A23"/><rect x="4.5" y="5" width="3" height="6" rx="1" fill="#1C2A23"/><rect x="9" y="2.5" width="3" height="8.5" rx="1" fill="#1C2A23"/><rect x="13.5" y="0" width="3" height="11" rx="1" fill="#1C2A23"/></svg>
+            <svg width="25" height="12" viewBox="0 0 25 12"><rect x=".5" y=".5" width="21" height="11" rx="3" fill="none" stroke="#1C2A23" opacity=".5"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="#1C2A23"/><rect x="22.5" y="4" width="2" height="4" rx="1" fill="#1C2A23"/></svg>
+          </span>
+        </div>
+        <div class="navbar pdark"><span class="nt">我的 · 更多</span></div>
+        <div class="scroll"><div class="body">
+          <div class="card" style="background:linear-gradient(135deg,#0A5532,#15854F);color:#fff;border:0;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/></svg>
+              <div><b style="font-size:15px;">无需登录即可使用</b><div style="font-size:11.5px;opacity:.9;margin-top:3px;">不收集手机号、不做定位授权，仅展示本站公开运营信息</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="field" style="margin-bottom:12px;">
+              <label>语言 · Language（选外语进入游客精简版，NFC 离线页同步生效）</label>
+              <div class="lang-opts" id="langOpts">
+                <button class="on" data-l="zh" onclick="pickLang('zh',this)">中文</button>
+                <button data-l="en" onclick="pickLang('en',this)">English</button>
+                <button data-l="ja" onclick="pickLang('ja',this)">日本語</button>
+                <button data-l="ko" onclick="pickLang('ko',this)">한국어</button>
+                <button data-l="ru" onclick="pickLang('ru',this)">Русский</button>
+              </div>
+            </div>
+            <div class="row" style="padding-top:12px;border-top:1px solid var(--border);">
+              <div><b style="font-size:13.5px;">适老化大字 / 高对比</b><div class="muted" style="font-size:11.5px;margin-top:2px;">字号更大、颜色对比更强</div></div>
+              <div class="switch" id="elderSwitch" onclick="toggleElder(this)"><i></i></div>
+            </div>
+          </div>
+          <div class="list-item" onclick="openOverlay('offline')">
+            <div class="li" style="background:var(--primary-tint);"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0B6B3F" stroke-width="2"><path d="M5 12.6a11 11 0 0 1 14 0M8.5 16a6 6 0 0 1 7 0M12 19.5h.01"/><path d="M2 9a16 16 0 0 1 20 0"/></svg></div>
+            <div class="lt"><b>无网 / NFC 离线指引</b><small>触碰站内 NFC 标签，离线也能看基础导向</small></div>
+            <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+          </div>
+          <div class="list-item" onclick="toast('已为你筛选含电梯/坡道的无障碍路线')">
+            <div class="li" style="background:#f4ead2;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#8a6a22" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="2"/><circle cx="12" cy="9" r="1.6"/><path d="M9 15h6M12 13v4"/></svg></div>
+            <div class="lt"><b>无障碍服务</b><small>电梯优先、高差/坡道标注、母婴与老年座位</small></div>
+            <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+          </div>
+          <div class="list-item" onclick="openOverlay('report')">
+            <div class="li" style="background:var(--accent-tint);"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#B2561B" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8l9 7a3 3 0 0 0 4 0l9-7z"/><path d="M23 6l-11 9L1 6M12 11h.01M9 9h.01M15 9h.01"/></svg></div>
+            <div class="lt"><b>隐患 / 异常拍照上报</b><small>设施故障、地面湿滑、导向缺失等，一键到站务</small></div>
+            <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+          </div>
+          <div class="list-item" onclick="toast('数据来源：AFC闸机 / BAS环控 / PIS播报，只读不写')">
+            <div class="li" style="background:var(--secondary-tint);"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0A5132" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5"/></svg></div>
+            <div class="lt"><b>数据来源与隐私说明</b><small>只读对接既有系统，不新增摄像头与传感器</small></div>
+            <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+          </div>
+          <div class="foot-note">青岛地铁站内实时信息共享交互系统 · 原型演示版</div>
+        </div></div>
+      </div>
+
+    </div>
+
+    <!-- 底部 Tab -->
+    <div class="tabbar">
+      <div class="tab active" data-tab="home" onclick="go('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>总览</div>
+      <div class="tab" data-tab="heat" onclick="go('heat')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg>热力</div>
+      <div class="tab" data-tab="transfer" onclick="go('transfer')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="5" r="2.5"/><path d="M8 17 16 7"/></svg>换乘</div>
+      <div class="tab" data-tab="mine" onclick="go('mine')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 16 0v1"/></svg>我的</div>
+    </div>
+
+    <!-- 二级页：突发详情 -->
+    <div class="overlay" id="ov-alert">
+      <div class="ov-hero">
+        <div class="statusbar pwhite"><span>9:41</span>
+          <span class="sb-r"><svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="7" width="3" height="4" rx="1" fill="#fff"/><rect x="4.5" y="5" width="3" height="6" rx="1" fill="#fff"/><rect x="9" y="2.5" width="3" height="8.5" rx="1" fill="#fff"/><rect x="13.5" y="0" width="3" height="11" rx="1" fill="#fff"/></svg></span>
+        </div>
+        <div class="navbar pwhite"><span class="back" onclick="closeOverlay()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M15 6l-6 6 6 6"/></svg>返回</span></div>
+        <div class="ov-body"><div class="ov-title">扶梯检修突发详情</div><div class="ov-sub">站务中心 09:32 发布 · 预计 10:30 恢复</div></div>
+      </div>
+      <div class="scroll"><div class="body">
+        <div class="card" style="border-left:4px solid var(--accent);">
+          <h4 style="color:#B2561B;">3 号线 B1 上行扶梯临时检修</h4>
+          <p class="sub" style="margin-top:8px;line-height:1.6;">设备运行中触发异响保护，工作人员已到场围挡检修，期间该扶梯暂停上行。携带大件行李、婴儿车或行动不便的乘客请优先使用无障碍电梯。</p>
+        </div>
+        <div class="card">
+          <h4 style="margin-bottom:10px;">影响范围</h4>
+          <ul class="impact">
+            <li>3 号线 B1 上行扶梯，预计排队上升至约 6 分钟</li>
+            <li>3 号线站台 B 端短时拥挤，建议向 A 端移动</li>
+            <li>对 2 号线进出站无直接影响</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4 style="margin-bottom:10px;">替代路线</h4>
+          <div class="tl">
+            <div class="step alt"><span class="sd"></span><div class="st">就近乘坐无障碍电梯</div><div class="sd2">A 站厅中部无障碍电梯当前畅通，可替代上行。</div></div>
+            <div class="step alt"><span class="sd"></span><div class="st">或改走 A 区步行楼梯</div><div class="sd2">高差 2 层，约 48 级台阶，请注意脚下。</div></div>
+          </div>
+        </div>
+        <button class="btn-primary" onclick="go('transfer');closeOverlay();">查看低拥堵换乘路线</button>
+      </div></div>
+    </div>
+
+    <!-- 二级页：点位详情 -->
+    <div class="overlay" id="ov-point">
+      <div class="ov-hero">
+        <div class="statusbar pwhite"><span>9:41</span>
+          <span class="sb-r"><svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="7" width="3" height="4" rx="1" fill="#fff"/><rect x="4.5" y="5" width="3" height="6" rx="1" fill="#fff"/><rect x="9" y="2.5" width="3" height="8.5" rx="1" fill="#fff"/><rect x="13.5" y="0" width="3" height="11" rx="1" fill="#fff"/></svg></span>
+        </div>
+        <div class="navbar pwhite"><span class="back" onclick="closeOverlay()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M15 6l-6 6 6 6"/></svg>返回</span></div>
+        <div class="ov-body"><div class="ov-title" id="pt-title">点位详情</div><div class="ov-sub" id="pt-loc">五四广场站 · 09:40 更新</div></div>
+      </div>
+      <div class="scroll"><div class="body">
+        <div class="card row" style="align-items:center;">
+          <div><div class="muted" style="font-size:12px;">预计等待</div><div class="bignum" id="pt-num" style="margin-top:2px;">约 6 分钟</div></div>
+          <span class="level" id="pt-level" style="color:#E5503F;background:#FBE7E3;"><span class="dot" style="background:#E5503F"></span>拥挤</span>
+        </div>
+        <div class="card"><h4 style="margin-bottom:8px;">为什么要等</h4><p class="sub" id="pt-why" style="line-height:1.6;"></p></div>
+        <div class="card"><h4 style="margin-bottom:8px;">绕行建议</h4><p class="sub" id="pt-tip" style="line-height:1.6;"></p></div>
+        <button class="btn-ghost" onclick="go('heat');closeOverlay();">在热力图中查看位置</button>
+      </div></div>
+    </div>
+
+    <!-- 二级页：客流分级 -->
+    <div class="overlay" id="ov-crowd">
+      <div class="ov-hero">
+        <div class="statusbar pwhite"><span>9:41</span>
+          <span class="sb-r"><svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="7" width="3" height="4" rx="1" fill="#fff"/><rect x="4.5" y="5" width="3" height="6" rx="1" fill="#fff"/><rect x="9" y="2.5" width="3" height="8.5" rx="1" fill="#fff"/><rect x="13.5" y="0" width="3" height="11" rx="1" fill="#fff"/></svg></span>
+        </div>
+        <div class="navbar pwhite"><span class="back" onclick="closeOverlay()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M15 6l-6 6 6 6"/></svg>返回</span></div>
+        <div class="ov-body"><div class="ov-title">在站客流与分级</div><div class="ov-sub">数据由 AFC 闸机进出量与站台计数估算 · 示例数据</div></div>
+      </div>
+      <div class="scroll"><div class="body">
+        <div class="card"><div class="bignum" style="margin-top:0;">约 4,200 <small>人在站</small></div>
+          <div class="meter" style="margin-top:12px;"><i style="width:42%;background:#2FA36B"></i><i style="width:30%;background:#EFA63A"></i><i style="width:28%;background:#E5503F"></i></div>
+          <div class="meter-lbl"><span>畅通 ≤40%</span><span>较挤 40–70%</span><span>拥挤 &gt;70%</span></div>
+        </div>
+        <div class="card">
+          <h4 style="margin-bottom:10px;">三级客流分级（阈值可按站点标定）</h4>
+          <ul class="impact">
+            <li style="color:#127a49;">绿色·畅通：通行顺畅，无需等待</li>
+            <li style="color:#9c6210;">黄色·较挤：局部排队，建议有序通行</li>
+            <li style="color:#B23222;">红色·拥挤：建议错峰或按低拥堵路径绕行</li>
+          </ul>
+          <p class="muted" style="font-size:11px;line-height:1.6;margin-top:4px;">客流数字仅读取既有 AFC/BAS 数据估算，不新增摄像头与传感器，不涉及个人识别。</p>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- 二级页：NFC 离线 -->
+    <div class="overlay" id="ov-offline">
+      <div class="ov-hero">
+        <div class="statusbar pwhite"><span>9:41</span><span class="sb-r"><svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="7" width="3" height="4" rx="1" fill="#fff"/><rect x="4.5" y="5" width="3" height="6" rx="1" fill="#fff"/><rect x="9" y="2.5" width="3" height="8.5" rx="1" fill="#fff"/><rect x="13.5" y="0" width="3" height="11" rx="1" fill="#fff"/></svg></span></div>
+        <div class="navbar pwhite"><span class="back" onclick="closeOverlay()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M15 6l-6 6 6 6"/></svg>返回</span></div>
+        <div class="ov-body"><div class="ov-title">无网 / NFC 离线指引</div><div class="ov-sub">不强制依赖网络，弱网也能用</div></div>
+      </div>
+      <div class="scroll"><div class="body">
+        <div class="card"><div class="tl">
+          <div class="step"><span class="sd"></span><div class="st">手机贴近站内 NFC 标签 / 扫二维码</div><div class="sd2">贴在闸机、立柱、电梯口，无需登录。</div></div>
+          <div class="step"><span class="sd"></span><div class="st">自动打开本站基础导向（离线缓存）</div><div class="sd2">出入口、换乘、电梯、卫生间位置在无网时仍可查看。</div></div>
+          <div class="step"><span class="sd"></span><div class="st">联网后自动刷新实时客流</div><div class="sd2">恢复网络即显示绿黄红状态与等待时长。</div></div>
+        </div></div>
+        <div class="card"><h4 style="margin-bottom:8px;">无手机乘客怎么办</h4><p class="sub" style="line-height:1.6;">可依靠座椅与立柱上的物理标识、站内原有导视屏与 PIS 显示屏获取信息，系统不替代既有导视。</p></div>
+      </div></div>
+    </div>
+
+    <!-- 二级页：隐患上报 -->
+    <div class="overlay" id="ov-report">
+      <div class="ov-hero">
+        <div class="statusbar pwhite"><span>9:41</span><span class="sb-r"><svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="7" width="3" height="4" rx="1" fill="#fff"/><rect x="4.5" y="5" width="3" height="6" rx="1" fill="#fff"/><rect x="9" y="2.5" width="3" height="8.5" rx="1" fill="#fff"/><rect x="13.5" y="0" width="3" height="11" rx="1" fill="#fff"/></svg></span></div>
+        <div class="navbar pwhite"><span class="back" onclick="closeOverlay()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M15 6l-6 6 6 6"/></svg>返回</span></div>
+        <div class="ov-body"><div class="ov-title">隐患 / 异常拍照上报</div><div class="ov-sub">位置由 NFC/二维码自动带入，无需登录</div></div>
+      </div>
+      <div class="scroll"><div class="body">
+        <div class="field">
+          <label>现场照片</label>
+          <div class="photo-add" onclick="toast('演示原型：此处调用相机拍照')">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            拍照或从相册添加
+          </div>
+        </div>
+        <div class="field"><label>问题类型</label>
+          <div class="chips">
+            <button class="on" onclick="pickChip(this)">设施故障</button>
+            <button onclick="pickChip(this)">地面湿滑</button>
+            <button onclick="pickChip(this)">导向缺失</button>
+            <button onclick="pickChip(this)">照明异常</button>
+            <button onclick="pickChip(this)">其他</button>
+          </div>
+        </div>
+        <div class="field"><label>位置（自动带入）</label><div class="input">五四广场站 · 3 号线 B1 上行扶梯口</div></div>
+        <div class="field"><label>补充说明（选填）</label><div class="input" style="color:var(--text-3);" onclick="toast('演示原型：可输入文字说明')">简单描述一下现场情况…</div></div>
+        <button class="btn-primary" onclick="submitReport()">提交到站务中心</button>
+      </div></div>
+    </div>
+
+    <!-- 适老化大字版 -->
+    <div id="elderRoot">
+      <!-- 大字首页 -->
+      <div class="eview" data-ev="home">
+        <div class="elder-top">
+          <span class="back" onclick="exitElder()">返回标准字</span>
+          <div class="elder-station">五四广场站</div>
+          <div class="elder-lines">2 号线 · 3 号线 换乘站</div>
+        </div>
+        <div class="escroll">
+          <div class="e-banner warn">
+            <div class="q">现在人多吗？</div>
+            <div class="big">人有点多</div>
+            <div class="desc">进站排队约 2 分钟，不着急，可以等一会儿再走。</div>
+          </div>
+          <div class="e-alert">
+            <div class="ea-ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></div>
+            <div><div class="ea-t">电梯提醒</div><div class="ea-d">3 号线上行扶梯正在修，请坐无障碍电梯。</div></div>
+          </div>
+          <div class="e-grid">
+            <button class="e-btn green" onclick="elderGo('transfer')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="5" r="2.5"/><path d="M8 17 16 7"/></svg><span>我要换乘</span></button>
+            <button class="e-btn teal" onclick="elderGo('facility')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 4h6v6M20 4l-9 9"/><path d="M19 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"/></svg><span>我要出站</span></button>
+            <button class="e-btn gold" onclick="elderGo('facility')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="2"/><circle cx="12" cy="9" r="1.6"/><path d="M9 15h6M12 13v4"/></svg><span>找电梯</span></button>
+            <button class="e-btn red" onclick="elderGo('help')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 16 0v1"/></svg><span>找人帮忙</span></button>
+          </div>
+          <div class="e-foot">找不到路，就问穿制服的工作人员，或按柱子上的呼叫按钮。</div>
+        </div>
+      </div>
+
+      <!-- 大字换乘 -->
+      <div class="eview" data-ev="transfer">
+        <div class="elder-top">
+          <span class="back" onclick="elderGo('home')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M15 6l-6 6 6 6"/></svg>返回</span>
+          <div class="elder-station" style="font-size:24px;">换乘 3 号线</div>
+          <div class="elder-lines">坐电梯、走平路，人少不挤</div>
+        </div>
+        <div class="escroll" style="padding-top:16px;">
+          <div class="e-time"><div class="t">大概需要</div><div class="b">约 4 分钟</div><div class="t">多走一点点，路好走、不排队</div></div>
+          <div class="e-step"><div class="num">1</div><div><div class="st">下车后往 A 端走</div><div class="sd">看绿色牌子，跟着走。</div></div></div>
+          <div class="e-step"><div class="num">2</div><div><div class="st">进入 A 站厅</div><div class="sd">这边人少，路好走。</div></div></div>
+          <div class="e-step"><div class="num">3</div><div><div class="st">坐无障碍电梯下 2 层</div><div class="sd">不用走楼梯，有电梯。</div></div></div>
+          <div class="e-step"><div class="num">4</div><div><div class="st">就到 3 号线站台</div><div class="sd">在黄线后面排队等车。</div></div></div>
+          <button class="e-btn ghost" style="width:calc(100% - 36px);margin:0 18px 4px;" onclick="elderGo('home')"><span>我知道了</span></button>
+        </div>
+      </div>
+
+      <!-- 大字出站/电梯 -->
+      <div class="eview" data-ev="facility">
+        <div class="elder-top">
+          <span class="back" onclick="elderGo('home')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M15 6l-6 6 6 6"/></svg>返回</span>
+          <div class="elder-station" style="font-size:24px;">出站 · 电梯</div>
+        </div>
+        <div class="escroll" style="padding-top:16px;">
+          <div class="e-info">
+            <div class="ih"><div class="ic" style="background:#E3F4EA;"><svg viewBox="0 0 24 24" fill="none" stroke="#0B6B3F" stroke-width="2"><path d="M14 4h6v6M20 4l-9 9"/><path d="M19 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"/></svg></div>A 出口<span class="e-tag run">人少</span></div>
+            <div class="id">通往市政府、山东路，走 A 站厅，约 2 分钟。</div>
+          </div>
+          <div class="e-info">
+            <div class="ih"><div class="ic" style="background:#FCF1DD;"><svg viewBox="0 0 24 24" fill="none" stroke="#9c6210" stroke-width="2"><path d="M14 4h6v6M20 4l-9 9"/><path d="M19 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"/></svg></div>C 出口<span class="e-tag mid">人稍多</span></div>
+            <div class="id">通往海边、五四广场，约 4 分钟。</div>
+          </div>
+          <div class="e-info">
+            <div class="ih"><div class="ic" style="background:#E3F4EA;"><svg viewBox="0 0 24 24" fill="none" stroke="#0B6B3F" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="2"/><circle cx="12" cy="9" r="1.6"/><path d="M9 15h6M12 13v4"/></svg></div>无障碍电梯<span class="e-tag run">运行中</span></div>
+            <div class="id">A 站厅中部，可上下 2 层，轮椅、婴儿车都能用。</div>
+          </div>
+          <div class="e-info">
+            <div class="ih"><div class="ic" style="background:#F0ECE0;"><svg viewBox="0 0 24 24" fill="none" stroke="#8a6a22" stroke-width="2"><rect x="4" y="9" width="16" height="12" rx="2"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg></div>卫生间</div>
+            <div class="id">A 站厅中部，靠近客服中心。</div>
+          </div>
+          <button class="e-btn red" style="width:calc(100% - 36px);margin:0 18px 4px;min-height:84px;" onclick="elderGo('help')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 16 0v1"/></svg><span>还是找不到，找人帮忙</span></button>
+        </div>
+      </div>
+
+      <!-- 大字求助 -->
+      <div class="eview" data-ev="help">
+        <div class="elder-top">
+          <span class="back" onclick="elderGo('home')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M15 6l-6 6 6 6"/></svg>返回</span>
+          <div class="elder-station" style="font-size:24px;">需要帮忙？</div>
+        </div>
+        <div class="escroll" style="padding-top:18px;">
+          <button class="e-call" onclick="elderCall()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.96.34 1.9.7 2.8a2 2 0 0 1-.45 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.45c.9.36 1.84.6 2.8.7A2 2 0 0 1 22 16.9z"/></svg>呼叫站内工作人员</button>
+          <div class="e-info">
+            <div class="ih"><div class="ic" style="background:#E3F4EA;"><svg viewBox="0 0 24 24" fill="none" stroke="#0B6B3F" stroke-width="2"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><path d="M3 14a2 2 0 0 1 2-2h1v6H5a2 2 0 0 1-2-2zM21 14a2 2 0 0 0-2-2h-1v6h1a2 2 0 0 0 2-2z"/></svg></div>客服中心</div>
+            <div class="id">A 站厅中部，可换零钱、问路线、借轮椅。</div>
+          </div>
+          <div class="e-info">
+            <div class="ih"><div class="ic" style="background:#E3F4EA;"><svg viewBox="0 0 24 24" fill="none" stroke="#0B6B3F" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="2"/><circle cx="12" cy="9" r="1.6"/><path d="M9 15h6M12 13v4"/></svg></div>无障碍电梯<span class="e-tag run">运行中</span></div>
+            <div class="id">A 站厅中部，按电梯旁的呼叫按钮，可叫工作人员。</div>
+          </div>
+          <div class="e-foot">把手机贴在柱子或闸机上的绿色圆形标识上，也能看路线。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 多语言旅游精简版 -->
+    <div id="tourRoot">
+      <div class="ttop">
+        <div class="trow1">
+          <button class="tx" onclick="exitTour()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6"><path d="M15 6l-6 6 6 6"/></svg><span data-i18n="exit">返回中文</span></button>
+          <div class="tlng" id="tlng">
+            <button data-l="zh" onclick="setLang('zh')">中文</button>
+            <button class="on" data-l="en" onclick="setLang('en')">EN</button>
+            <button data-l="ja" onclick="setLang('ja')">日</button>
+            <button data-l="ko" onclick="setLang('ko')">한</button>
+            <button data-l="ru" onclick="setLang('ru')">РУ</button>
+          </div>
+        </div>
+        <div class="tstation" data-i18n="station">May Fourth Square</div>
+        <div class="tlines" data-i18n="lines">Lines 2 &amp; 3 · Interchange</div>
+      </div>
+
+      <!-- 景点出口 -->
+      <div class="tview active" data-tv="sights">
+        <div class="tscroll">
+          <div class="tbusypill">
+            <div class="bi" style="background:#FCF1DD;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E0920f" stroke-width="2"><path d="M12 3v2M12 19v2M3 12h2M19 12h2M6 6l1.4 1.4M16.6 16.6 18 18M18 6l-1.4 1.4M7.4 16.6 6 18"/><circle cx="12" cy="12" r="4"/></svg></div>
+            <div style="flex:1;">
+              <div class="bq" data-i18n="busyQ">How busy now?</div>
+              <div class="bl" data-i18n="busyL">A little busy</div>
+              <div class="bd" data-i18n="busyD">About 2 min to enter. Fine to wait a moment.</div>
+            </div>
+          </div>
+          <div class="tsech"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg><span data-i18n="sightsH">Which exit for sights?</span></div>
+          <div id="sightList" style="display:flex;flex-direction:column;gap:10px;"></div>
+        </div>
+      </div>
+
+      <!-- 乘车 / 换乘 -->
+      <div class="tview" data-tv="route">
+        <div class="tscroll">
+          <div class="tsech"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span data-i18n="flH">First / Last trains</span></div>
+          <div class="tfirstlast">
+            <div class="tfl"><div class="l"><span class="linechip" style="background:#1E8AD6;color:#fff;">2</span><span data-i18n="line2">Line 2</span></div><div class="v">06:15 <small data-i18n="first">first</small><br>22:50 <small data-i18n="last">last</small></div></div>
+            <div class="tfl"><div class="l"><span class="linechip" style="background:#0B6B3F;color:#fff;">3</span><span data-i18n="line3">Line 3</span></div><div class="v">06:10 <small data-i18n="first">first</small><br>22:45 <small data-i18n="last">last</small></div></div>
+          </div>
+          <div class="tsech" style="margin-top:2px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="5" r="2.5"/><path d="M8 17 16 7"/></svg><span data-i18n="routeH">Popular destinations</span></div>
+          <div id="routeList" style="display:flex;flex-direction:column;gap:10px;"></div>
+          <div class="tnote" data-i18n="example">Times shown are illustrative example data.</div>
+        </div>
+      </div>
+
+      <!-- 票务 -->
+      <div class="tview" data-tv="tickets">
+        <div class="tscroll">
+          <div class="tsech"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg><span data-i18n="ticketsH">Tickets &amp; payment</span></div>
+          <div id="ticketList" style="display:flex;flex-direction:column;gap:10px;"></div>
+        </div>
+      </div>
+
+      <!-- 求助 -->
+      <div class="tview" data-tv="help">
+        <div class="tscroll">
+          <button class="tbig red" onclick="tourCall()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.96.34 1.9.7 2.8a2 2 0 0 1-.45 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.45c.9.36 1.84.6 2.8.7A2 2 0 0 1 22 16.9z"/></svg><span data-i18n="callStaff">Call station staff</span></button>
+          <div class="tcard"><div class="si" style="background:#E3F4EA;"><svg viewBox="0 0 24 24" fill="none" stroke="#0B6B3F" stroke-width="2"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><path d="M3 14a2 2 0 0 1 2-2h1v6H5a2 2 0 0 1-2-2zM21 14a2 2 0 0 0-2-2h-1v6h1a2 2 0 0 0 2-2z"/></svg></div><div><div class="sn" data-i18n="svcT">Service center</div><div class="sd" data-i18n="svcD">Mid-Concourse A: change, directions, wheelchair.</div></div></div>
+          <div class="tcard"><div class="si" style="background:#E3F4EA;"><svg viewBox="0 0 24 24" fill="none" stroke="#0B6B3F" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="2"/><circle cx="12" cy="9" r="1.6"/><path d="M9 15h6M12 13v4"/></svg></div><div><div class="sn" data-i18n="liftT">Step-free elevator</div><div class="sd" data-i18n="liftD">Concourse A, running. For wheelchairs &amp; strollers.</div></div></div>
+          <div class="tcard"><div class="si" style="background:#F0ECE0;"><svg viewBox="0 0 24 24" fill="none" stroke="#8a6a22" stroke-width="2"><rect x="4" y="9" width="16" height="12" rx="2"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg></div><div><div class="sn" data-i18n="wcT">Restroom</div><div class="sd" data-i18n="wcD">Mid-Concourse A, next to the service center.</div></div></div>
+          <div class="tnote" data-i18n="sosNote">Red button on the platform or by the elevator = emergency call.</div>
+        </div>
+      </div>
+
+      <div class="ttabbar" id="ttabbar">
+        <div class="ttab on" data-t="sights" onclick="tourGo('sights')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg><span data-i18n="tabSights">Sights</span></div>
+        <div class="ttab" data-t="route" onclick="tourGo('route')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="16" rx="3"/><path d="M5 11h14M9 16h.01M15 16h.01"/><path d="M9 19v2M15 19v2"/></svg><span data-i18n="tabRoute">Trains</span></div>
+        <div class="ttab" data-t="tickets" onclick="tourGo('tickets')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg><span data-i18n="tabTickets">Tickets</span></div>
+        <div class="ttab" data-t="help" onclick="tourGo('help')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .9-1 1.7M12 17h.01"/></svg><span data-i18n="tabHelp">Help</span></div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div></div>
+
+  <!-- 右侧导航 -->
+  <div class="side">
+    <h3>演示导航</h3>
+    <p>可直接点手机底部 Tab，也可点下面按钮快速跳转；页面内橙色突发、等待卡片、绿色路径、上报入口都可点。</p>
+    <div class="navlist">
+      <button onclick="go('home')"><b>1 · 本站总览</b><small>突发 / 客流 / 等待时长 / 快捷入口</small></button>
+      <button onclick="go('heat')"><b>2 · 热力平面图</b><small>三楼层切换 / 绿黄红 / 低拥堵路径</small></button>
+      <button onclick="go('transfer')"><b>3 · 换乘指引</b><small>常规 / 低拥堵 / 无障碍三方案</small></button>
+      <button onclick="go('mine')"><b>4 · 我的</b><small>语言 / 适老化 / 离线 / 上报 / 隐私</small></button>
+      <button onclick="openOverlay('alert')"><b>二级 · 突发详情</b><small>影响范围 + 替代路线</small></button>
+      <button onclick="openPoint('up')"><b>二级 · 点位详情</b><small>等待原因 + 绕行建议</small></button>
+      <button onclick="openOverlay('report')"><b>二级 · 隐患上报</b><small>拍照 / 类型 / 自动定位</small></button>
+      <button onclick="enterElder()" style="background:#E3F4EA;border-color:#A9DCC1;"><b>适老化大字版</b><small>同「我的」开关 · 极简高对比</small></button>
+      <button onclick="enterTour('en')" style="background:#E3F0FA;border-color:#A9D0E8;"><b>多语言游客版 · EN</b><small>景点出口/乘车/票务/求助 · 英日韩俄</small></button>
+    </div>
+    <div class="legendbox">
+      <h4>配色（青岛地铁）</h4>
+      <div class="l"><span class="dot" style="background:#0B6B3F;width:14px;height:14px;"></span>深绿主色 #0B6B3F</div>
+      <div class="l"><span class="dot" style="background:#2FA36B;width:14px;height:14px;border-radius:3px;"></span>亮绿 / 畅通 #2FA36B</div>
+      <div class="l"><span class="dot" style="background:#F2EEE1;width:14px;height:14px;border:1px solid #d8d1bd;border-radius:3px;"></span>米白背景 #F2EEE1</div>
+      <div class="l"><span class="dot" style="background:#E5732B;width:14px;height:14px;border-radius:3px;"></span>预警橙 #E5732B</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function go(name){
+    document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.dataset.page===name));
+    document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===name));
+    document.querySelectorAll('.page .scroll').forEach(s=>s.scrollTop=0);
+  }
+  function openOverlay(name){document.getElementById('ov-'+name).classList.add('active');}
+  function closeOverlay(){document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('active'));}
+  let toastTimer;
+  function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.classList.remove('show');},1800);}
+  function pickChip(b){b.parentNode.querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');}
+  /* ===== 多语言旅游精简版 ===== */
+  var curLang='en';
+  var T={
+    station:{zh:'五四广场站',en:'May Fourth Square',ja:'五四広場駅',ko:'5·4광장역',ru:'пл. «4 Мая»'},
+    lines:{zh:'2号线 · 3号线 换乘站',en:'Lines 2 & 3 · Interchange',ja:'2号線・3号線 乗換駅',ko:'2호선·3호선 환승역',ru:'Линии 2 и 3 · пересадка'},
+    exit:{zh:'返回中文版',en:'中文 / Back',ja:'中文 / 戻る',ko:'中文 / 뒤로',ru:'中文 / Назад'},
+    busyQ:{zh:'现在人多吗？',en:'How busy now?',ja:'今の混み具合は？',ko:'지금 붐비나요?',ru:'Насколько людно?'},
+    busyL:{zh:'人有点多',en:'A little busy',ja:'やや混雑',ko:'약간 혼잡',ru:'Немного людно'},
+    busyD:{zh:'进站排队约 2 分钟，不着急可稍等。',en:'About 2 min to enter. Fine to wait a moment.',ja:'入場まで約2分。急がなければ少し待てます。',ko:'입장까지 약 2분. 천천히 기다리세요.',ru:'Вход — около 2 минут. Можно немного подождать.'},
+    sightsH:{zh:'去哪个出口看景点？',en:'Which exit for sights?',ja:'観光は何番出口？',ko:'관광은 어느 출구?',ru:'Какой выход к местам?'},
+    flH:{zh:'首末班车',en:'First / Last trains',ja:'始発・終電',ko:'첫차·막차',ru:'Первый / последний'},
+    line2:{zh:'2号线',en:'Line 2',ja:'2号線',ko:'2호선',ru:'Линия 2'},
+    line3:{zh:'3号线',en:'Line 3',ja:'3号線',ko:'3호선',ru:'Линия 3'},
+    first:{zh:'首班',en:'first',ja:'始発',ko:'첫차',ru:'первый'},
+    last:{zh:'末班',en:'last',ja:'終電',ko:'막차',ru:'последний'},
+    routeH:{zh:'热门目的地',en:'Popular destinations',ja:'よく行く場所',ko:'주요 목적지',ru:'Популярные направления'},
+    example:{zh:'*时间为示例数据',en:'*Illustrative example data.',ja:'*時刻は例示データです。',ko:'*시간은 예시 데이터입니다.',ru:'*Время — примерные данные.'},
+    ticketsH:{zh:'票务与支付',en:'Tickets and payment',ja:'切符・お支払い',ko:'승차권 및 결제',ru:'Билеты и оплата'},
+    callStaff:{zh:'呼叫站内工作人员',en:'Call station staff',ja:'駅係員を呼ぶ',ko:'역 직원 호출',ru:'Вызвать сотрудника'},
+    svcT:{zh:'客服中心',en:'Service center',ja:'ご案内カウンター',ko:'안내센터',ru:'Стойка информации'},
+    svcD:{zh:'A 站厅中部：换零钱、问路线、借轮椅。',en:'Mid-Concourse A: change, directions, wheelchair.',ja:'Aコンコース中央：両替・道案内・車いす。',ko:'A대합실 중앙: 환전, 길안내, 휠체어.',ru:'Центр вестибюля A: размен, справки, кресло-каталка.'},
+    liftT:{zh:'无障碍电梯',en:'Step-free elevator',ja:'エレベーター',ko:'엘리베이터',ru:'Лифт без ступеней'},
+    liftD:{zh:'A 站厅中部，运行中，轮椅、婴儿车可用。',en:'Concourse A, running. For wheelchairs and strollers.',ja:'Aコンコース、稼働中。車いす・ベビーカー可。',ko:'A대합실 운행중. 휠체어·유모차 가능.',ru:'Вестибюль A, работает. Для колясок.'},
+    wcT:{zh:'卫生间',en:'Restroom',ja:'トイレ',ko:'화장실',ru:'Туалет'},
+    wcD:{zh:'A 站厅中部，客服中心旁。',en:'Mid-Concourse A, next to the service center.',ja:'Aコンコース中央、案内所の隣。',ko:'A대합실 중앙, 안내센터 옆.',ru:'Центр вестибюля A, рядом со стойкой.'},
+    sosNote:{zh:'*站台或电梯旁红色按钮可紧急呼叫。',en:'Red button on the platform or by the elevator = emergency call.',ja:'*ホーム・エレベーター横の赤いボタンで緊急呼出。',ko:'*승강장·엘리베이터 옆 빨간 버튼으로 긴급호출.',ru:'*Красная кнопка на платформе или у лифта — экстренный вызов.'},
+    tabSights:{zh:'景点',en:'Sights',ja:'観光',ko:'관광',ru:'Места'},
+    tabRoute:{zh:'乘车',en:'Trains',ja:'電車',ko:'탑승',ru:'Поезда'},
+    tabTickets:{zh:'票务',en:'Tickets',ja:'切符',ko:'승차권',ru:'Билеты'},
+    tabHelp:{zh:'求助',en:'Help',ja:'案内',ko:'도움말',ru:'Помощь'}
+  };
+  var ICONS={
+    sea:{bg:'#E3F0FA',fg:'#1E78C2',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 16c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/><path d="M2 20c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/><circle cx="17" cy="7" r="2"/></svg>'},
+    sail:{bg:'#E3F4EA',fg:'#0B6B3F',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v13M12 3l5 11h-5zM4 17h13l-1.5 3H6z"/></svg>'},
+    villa:{bg:'#F4EAD2',fg:'#9c7420',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7M5 10v9h14v-9"/><path d="M10 19v-5h4v5"/></svg>'},
+    pier:{bg:'#FBEADC',fg:'#C75E1F',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h18M7 8v5M17 8v5M6 13h12M9 17h6"/></svg>'},
+    train:{bg:'#E3F4EA',fg:'#0B6B3F',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="3" width="12" height="14" rx="3"/><path d="M6 11h12M9 14h.01M15 14h.01M9 20l-2 2M15 20l2 2"/></svg>'},
+    plane:{bg:'#E3F0FA',fg:'#1E78C2',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L14 19v-5.5z"/></svg>'},
+    qr:{bg:'#E3F4EA',fg:'#0B6B3F',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v7M14 21h3"/></svg>'},
+    ticket:{bg:'#FCF1DD',fg:'#9c6210',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2 2 2 0 0 0 0 4 2 2 0 0 1-2 2H5a2 2 0 0 1-2-2 2 2 0 0 0 0-4z"/><path d="M14 6v12"/></svg>'},
+    info:{bg:'#F0ECE0',fg:'#8a6a22',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>'}
+  };
+  var SIGHTS=[
+    {icon:'sea',hl:true,name:{zh:'五四广场 · 海边',en:'May Fourth Square and Seafront',ja:'五四広場・海辺',ko:'5·4광장·바다',ru:'пл. 4 Мая и набережная'},desc:{zh:'红色雕塑地标，看海、夜景灯光秀。',en:'Iconic red sculpture, seaside and evening light show.',ja:'赤い彫刻のランドマーク、海と夜景ショー。',ko:'붉은 조각상, 바다, 야간 라이트쇼.',ru:'Красная скульптура, море и вечернее шоу.'},go:{zh:'C 出口 · 步行约 5 分钟',en:'Exit C · 5 min walk',ja:'C出口 · 徒歩約5分',ko:'C출구 · 도보 약 5분',ru:'Выход C · 5 мин пешком'}},
+    {icon:'sail',name:{zh:'奥帆中心',en:'Olympic Sailing Center',ja:'オリンピックセーリングセンター',ko:'올림픽 요트센터',ru:'Олимпийский парусный центр'},desc:{zh:'帆船码头、海景、餐饮。',en:'Marina, sea views and dining.',ja:'ヨットハーバー、海の景色、レストラン。',ko:'요트마리나, 바다 전망, 식당.',ru:'Яхт-гавань, виды на море, кафе.'},go:{zh:'A 出口 · 步行约 12 分钟',en:'Exit A · 12 min walk',ja:'A出口 · 徒歩約12分',ko:'A출구 · 도보 약 12분',ru:'Выход A · 12 мин'}},
+    {icon:'villa',name:{zh:'八大关风景区',en:'Badaguan Scenic Area',ja:'八関景区',ko:'팔대관 풍경구',ru:'Парк Бадагуань'},desc:{zh:'异国老别墅、林荫道、第二海水浴场。',en:'Old villas, tree-lined streets and 2nd Bathing Beach.',ja:'異国の洋館、並木道、第二海水浴場。',ko:'서양식 별장, 가로수길, 제2해수욕장.',ru:'Старые виллы, аллеи и 2-й пляж.'},go:{zh:'换乘 3 号线 · 太平角公园方向',en:'Line 3 toward Taipingjiao Park',ja:'3号線（太平角公園方面）',ko:'3호선 환승(타이핑자오 공원 방면)',ru:'Линия 3 до парка Тайпинцзяо'}},
+    {icon:'pier',name:{zh:'栈桥 · 青岛站',en:'Zhanqiao Pier and Old Town',ja:'桟橋・旧市街',ko:'잔교·구시가지',ru:'Пирс Чжаньцяо и старый город'},desc:{zh:'百年栈桥地标，直达青岛火车站。',en:'Century-old pier; direct to Qingdao Station.',ja:'100年の桟橋、青島駅へ直通。',ko:'백년 잔교, 칭다오역 직통.',ru:'Столетний пирс, прямо к вокзалу.'},go:{zh:'乘 3 号线至青岛站 · 约 12 分钟',en:'Line 3 to Qingdao Station · ~12 min',ja:'3号線 青島駅下車 · 約12分',ko:'3호선 칭다오역 · 약 12분',ru:'Линия 3 до вокзала · ~12 мин'}}
+  ];
+  var ROUTES=[
+    {icon:'pier',name:{zh:'青岛火车站 · 栈桥',en:'Qingdao Railway Station and Pier',ja:'青島駅・桟橋',ko:'칭다오역·잔교',ru:'Вокзал Циндао и пирс'},how:{zh:'乘 3 号线',en:'Line 3',ja:'3号線',ko:'3호선',ru:'Линия 3'},time:'~12 min'},
+    {icon:'train',name:{zh:'青岛北站（高铁）',en:'Qingdao North Railway Station',ja:'青島北駅（高速鉄道）',ko:'칭다오 북역(고속철)',ru:'Северный вокзал (ВСМ)'},how:{zh:'乘 3 号线',en:'Line 3',ja:'3号線',ko:'3호선',ru:'Линия 3'},time:'~25 min'},
+    {icon:'plane',name:{zh:'青岛胶东国际机场',en:'Jiaodong Int. Airport',ja:'膠東国際空港',ko:'자오둥 국제공항',ru:'Аэропорт Цзяодун'},how:{zh:'3 号线换乘 8 号线',en:'Line 3 then Line 8',ja:'3号線→8号線',ko:'3호선→8호선',ru:'Линия 3, затем линия 8'},time:'~50 min'}
+  ];
+  var TICKETS=[
+    {icon:'qr',hl:true,name:{zh:'手机扫码乘车（最方便）',en:'Scan QR with your phone (easiest)',ja:'スマホQR乗車（一番簡単）',ko:'휴대폰 QR 승차(최고 간편)',ru:'QR в телефоне (проще всего)'},desc:{zh:'支持 Alipay、微信、海外信用卡与乘车码，进站闸机扫码即可。',en:'Alipay, WeChat Pay, overseas cards and transit QR. Scan at the gate.',ja:'Alipay・WeChat・海外カード・乗車QR対応。改札でかざすだけ。',ko:'알리페이·위챗·해외카드·교통QR 지원. 개찰구에서 스캔.',ru:'Alipay, WeChat Pay, зарубежные карты и QR. Приложите к турникету.'}},
+    {icon:'ticket',name:{zh:'单程票（自助售票机）',en:'Single-journey ticket (machine)',ja:'片道切符（券売機）',ko:'편도권(자동발권기)',ru:'Разовый билет (автомат)'},desc:{zh:'站厅售票机可买，支持现金与手机支付，有英文界面。',en:'Machines in the concourse; cash and mobile, English menu.',ja:'コンコースの券売機（現金・モバイル、英語対応）。',ko:'대합실 발권기(현금·모바일, 영어 메뉴).',ru:'Автоматы в вестибюле; наличные и телефон, есть английский.'}},
+    {icon:'info',name:{zh:'票价与客服',en:'Fares and service',ja:'運賃・ご案内',ko:'요금 및 안내',ru:'Стоимость и справки'},desc:{zh:'起步价 2 元，按里程计价；客服中心可换零钱、问路线。',en:'Fares from ¥2 by distance. Change and info at the service center.',ja:'運賃は2元〜（距離制）。案内所で両替・質問。',ko:'기본요금 2위엔(거리별). 안내센터 환전·안내.',ru:'От 2 юаней по расстоянию. Размен и справки — на стойке.'}}
+  ];
+  function icon(name){var c=ICONS[name]||ICONS.info;return '<div class="si" style="background:'+c.bg+';color:'+c.fg+'">'+c.svg+'</div>';}
+  function renderLists(lang){
+    document.getElementById('sightList').innerHTML=SIGHTS.map(function(s){return '<div class="tcard'+(s.hl?' hl':'')+'">'+icon(s.icon)+'<div style="flex:1;"><div class="sn">'+s.name[lang]+'</div><div class="sd">'+s.desc[lang]+'</div><div class="sgo">'+s.go[lang]+'</div></div></div>';}).join('');
+    document.getElementById('routeList').innerHTML=ROUTES.map(function(r){return '<div class="trecrow">'+icon(r.icon)+'<div style="flex:1;"><b>'+r.name[lang]+'</b>'+r.how[lang]+'</div><div class="ttime">'+r.time+'</div></div>';}).join('');
+    document.getElementById('ticketList').innerHTML=TICKETS.map(function(t){return '<div class="tcard'+(t.hl?' hl':'')+'">'+icon(t.icon)+'<div style="flex:1;"><div class="sn">'+t.name[lang]+'</div><div class="sd">'+t.desc[lang]+'</div></div></div>';}).join('');
+  }
+  function syncLangOpts(lang){document.querySelectorAll('#langOpts button').forEach(function(b){b.classList.toggle('on',b.dataset.l===lang);});document.querySelectorAll('#tlng button').forEach(function(b){b.classList.toggle('on',b.dataset.l===lang);});}
+  function setLang(lang){
+    if(lang==='zh'){exitTour();return;}
+    curLang=lang;
+    document.querySelectorAll('#tourRoot [data-i18n]').forEach(function(el){var k=el.getAttribute('data-i18n');if(T[k])el.textContent=T[k][lang];});
+    syncLangOpts(lang);
+    renderLists(lang);
+    document.getElementById('tourRoot').classList.add('active');
+  }
+  function tourGo(v){
+    document.querySelectorAll('#tourRoot .tview').forEach(function(x){x.classList.toggle('active',x.dataset.tv===v);});
+    document.querySelectorAll('#ttabbar .ttab').forEach(function(x){x.classList.toggle('on',x.dataset.t===v);});
+    var sc=document.querySelector('#tourRoot .tview.active .tscroll');if(sc)sc.scrollTop=0;
+  }
+  function enterTour(lang){setLang(lang||'en');tourGo('sights');}
+  function exitTour(){document.getElementById('tourRoot').classList.remove('active');curLang='zh';syncLangOpts('zh');}
+  function pickLang(lang,btn){syncLangOpts(lang);if(lang==='zh'){exitTour();toast('已使用中文界面');}else{setLang(lang);}}
+  function tourCall(){var m={zh:'已通知附近工作人员，请稍等',en:'Staff is coming. Please wait.',ja:'係員が向かいます。少々お待ちください。',ko:'직원이 곧 갑니다. 잠시만 기다리세요.',ru:'Сотрудник подойдёт, подождите.'};toast(m[curLang]||m.en);}
+
+  /* 热力楼层 */
+  function switchFloor(i,btn){
+    ['floor0','floor1','floor2'].forEach(function(id,k){document.getElementById(id).style.display=(k===i)?'block':'none';});
+    btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
+    toast(['站厅层','2 号线站台','3 号线站台'][i]+' 实时客流');
+  }
+
+  /* 点位详情数据 */
+  var POINTS={
+    in:{t:'进站闸机',loc:'A 区 / B 区进站闸机 · 09:40',num:'约 2 分钟',lv:'畅通',color:'#2FA36B',bg:'#E3F4EA',why:'当前进站客流平稳，A 区闸机开放 6 通道、B 区开放 4 通道，整体通行顺畅。',tip:'无需绕行，按就近闸机进站即可；若携带大件行李可走宽通道闸机。'},
+    out:{t:'出站闸机',loc:'A 区 / B 区出站闸机 · 09:40',num:'约 4 分钟',lv:'较挤',color:'#EFA63A',bg:'#FCF1DD',why:'出站客流上升，B 区出站闸机靠近商圈出口，短时排队较明显。',tip:'建议前往 A 区出站闸机，约少排 2 分钟；C 口出站人流更少。'},
+    up:{t:'3 号线 B1 上行扶梯',loc:'B1 上行扶梯 · 检修中',num:'约 6 分钟',lv:'拥挤',color:'#E5503F',bg:'#FBE7E3',why:'该扶梯因异响保护临时检修并围挡（预计 10:30 恢复），乘客集中在相邻通道，等待明显变长。',tip:'请改走 A 站厅中部无障碍电梯，或 A 区步行楼梯，可在热力图查看低拥堵路径。'},
+    down:{t:'下行扶梯',loc:'A 区下行扶梯 · 09:40',num:'约 1 分钟',lv:'畅通',color:'#2FA36B',bg:'#E3F4EA',why:'下行方向客流较少，扶梯运行正常，基本无需等待。',tip:'可按正常路线通行，无需绕行。'}
+  };
+  function openPoint(k){
+    var d=POINTS[k];
+    document.getElementById('pt-title').textContent=d.t;
+    document.getElementById('pt-loc').textContent=d.loc;
+    document.getElementById('pt-num').textContent=d.num;
+    var lv=document.getElementById('pt-level');
+    lv.innerHTML='<span class="dot" style="background:'+d.color+'"></span>'+d.lv;
+    lv.style.color=d.color;lv.style.background=d.bg;
+    document.getElementById('pt-why').textContent=d.why;
+    document.getElementById('pt-tip').textContent=d.tip;
+    openOverlay('point');
+  }
+
+  /* 换乘方案数据 */
+  var PLANS={
+    normal:{cmp:['常规方案','约 3 分钟','换乘通道当前较挤','#EFA63A'],
+      steps:[
+        ['2 号线站台下车，跟随“换乘 3 号线”导向','经 B 端进入换乘通道，当前较挤。',[['当前较挤','orange']]],
+        ['沿换乘通道步行至 3 号线','通道较窄，高峰时段双向人流交汇。',[['步行约 120 米','cyan']]],
+        ['乘下行扶梯至 3 号线站台','按地面黄线排队候车。',[['高差 2 层','orange']]]
+      ],elev:null},
+    low:{best:true,cmp:['低拥堵方案（已选）','约 4 分钟','多走 80 米 · 全程畅通','#0A5132'],
+      steps:[
+        ['2 号线站台下车，往 A 端','按导向往 A 端走，B 端当前为拥挤段。',[['步行约 60 米','cyan']]],
+        ['进入 A 站厅，沿绿色标识','A 站厅当前畅通，避开 B1 检修扶梯。',[['A 站厅 · 畅通','green']]],
+        ['乘无障碍电梯下行','经过 2 层高差，优先规划电梯，行李/婴儿车更友好。',[['高差 2 层','orange'],['有电梯','cyan']]],
+        ['抵达 3 号线站台','按地面黄线排队候车。',[]]
+      ],elev:['全程无障碍 / 电梯优先','本路线高差、电梯与出入口均已标注，可在「我的」切换中英日韩多语言。']},
+    access:{cmp:['无障碍方案','约 5 分钟','电梯/坡道优先 · 全程无台阶','#8a6a22'],
+      steps:[
+        ['2 号线站台 A 端，找无障碍电梯','站台上有轮椅标识，呼叫按钮可联系工作人员。',[['有电梯','cyan']]],
+        ['乘电梯升至 A 站厅','沿绿色无障碍通道行进，地面无高差。',[['无台阶','green']]],
+        ['经 A 站厅中部无障碍电梯下行','两部电梯均正常运行，避开检修扶梯。',[['高差 2 层','gold']]],
+        ['抵达 3 号线站台无障碍候车区','正对爱心车厢，靠近母婴与老年座位。',[['爱心车厢','gold']]]
+      ],elev:['全程零台阶 / 电梯优先','适合轮椅、婴儿车、老年人与携带大件行李乘客，可呼叫站务协助。']}
+  };
+  function pill(cls,txt){return '<span class="pill '+cls+'">'+txt+'</span>';}
+  function renderPlan(key){
+    var d=PLANS[key];
+    var cmpColor=d.cmp[3];
+    var isBest=key!=='normal';
+    document.getElementById('compareBox').innerHTML=
+      '<div class="cmp"><div class="cl">'+d.cmp[0]+'</div><div class="cv" style="color:'+cmpColor+'">'+d.cmp[1]+'</div><div class="sub" style="margin-top:4px;font-size:11px;color:'+cmpColor+';">'+d.cmp[2]+'</div></div>'+
+      '<div class="cmp '+(d.best?'best':'')+'"><div class="cl">vs 常规方案</div><div class="cv">'+(key==='normal'?'当前选择':(key==='low'?'多走 80 米':'多花约 2 分钟'))+'</div><div class="sub" style="margin-top:4px;font-size:11px;">'+(key==='normal'?'距离最短但较挤':(key==='low'?'全程畅通、少排队':'平稳省力、无台阶'))+'</div></div>';
+    var cls=key==='normal'?'':'alt';if(key==='access')cls='acc';
+    var html=d.steps.map(function(s,i){
+      var pills=s[2].map(function(p){
+        var c=p[0]==='当前较挤'?'orange':(p[0]==='高差 2 层'?'orange':(p[0].indexOf('无台阶')>-1||p[0].indexOf('畅通')>-1||p[0].indexOf('爱心')>-1?(p[0].indexOf('爱心')>-1?'gold':'cyan'):'cyan'));
+        if(p[0]==='A 站厅 · 畅通'||p[0]==='无台阶')c='green';
+        return '<span class="pill '+(c==='green'?'cyan':c)+'">'+p[0]+'</span>';
+      }).join('');
+      return '<div class="step '+cls+'"><span class="sd"></span><div class="st">'+(i+1)+'. '+s[0]+'</div><div class="sd2">'+s[1]+'</div><div class="meta">'+pills+'</div></div>';
+    }).join('');
+    document.getElementById('tlBox').innerHTML=html;
+    var eb=document.getElementById('elevBox');
+    if(d.elev){eb.style.display='flex';eb.innerHTML='<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="'+(key==='access'?'#8a6a22':'#0B6B3F')+'" stroke-width="2" style="flex:none"><rect x="5" y="3" width="14" height="18" rx="2"/><circle cx="12" cy="9" r="1.6"/><path d="M9 15h6M12 13v4"/></svg><div class="et" style="color:'+(key==='access'?'#8a6a22':'#0B6B3F')+'">'+d.elev[0]+'<small>'+d.elev[1]+'</small></div>';}
+    else{eb.style.display='none';}
+  }
+  function switchPlan(key,btn){
+    btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
+    renderPlan(key);
+  }
+  function submitReport(){toast('已提交到站务中心，感谢反馈');setTimeout(closeOverlay,900);}
+
+  /* 适老化大字版 */
+  function elderGo(name){
+    document.querySelectorAll('#elderRoot .eview').forEach(function(v){v.classList.toggle('active',v.dataset.ev===name);});
+    var sc=document.querySelector('#elderRoot .eview.active .escroll'); if(sc)sc.scrollTop=0;
+  }
+  function enterElder(){document.getElementById('elderRoot').classList.add('active');elderGo('home');}
+  function exitElder(){document.getElementById('elderRoot').classList.remove('active');var sw=document.getElementById('elderSwitch');if(sw)sw.classList.remove('on');toast('已恢复标准显示');}
+  function elderCall(){toast('已通知附近工作人员，请原地稍等');}
+  function toggleElder(el){
+    if(el.classList.contains('on')){el.classList.remove('on');toast('已恢复标准显示');}
+    else{el.classList.add('on');enterElder();}
+  }
+
+  renderPlan('low');
+  (function(){var h=location.hash.slice(1);if(!h)return;if(document.querySelector('.page[data-page="'+h+'"]'))go(h);if(['alert','crowd','offline','report'].indexOf(h)>-1)openOverlay(h);if(h==='point')openPoint('up');if(h==='elder'){enterElder();}if(h.indexOf('elder-')===0){enterElder();elderGo(h.split('-')[1]);}if(h==='tour'){enterTour('en');}if(h.indexOf('tour-')===0){var p=h.split('-');setLang(p[1]);if(p[2])tourGo(p[2]);}})();
+</script>
+</body>
+</html>
