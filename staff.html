@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>青岛地铁站务端 · 独立权限小程序 可点击原型</title>
+<style>
+:root{
+  --bg:#F2EEE1; --surface:#FCFAF3; --surface-2:#FFFFFF; --tint:#E9F2EB;
+  --primary:#0B6B3F; --primary-2:#15854F; --primary-tint:#E0EEE5;
+  --secondary:#2FA36B; --secondary-tint:#E3F4EA; --secondary-deep:#0A5132;
+  --accent:#E5732B; --accent-tint:#FBEADC; --gold:#C9A24B; --gold-tint:#F6ECD4;
+  --text:#1C2A23; --text-2:#54645A; --text-3:#93A096; --border:#E2DDCC;
+  --ok:#2FA36B; --ok-tint:#E3F4EA; --warn:#EFA63A; --warn-tint:#FCF1DD;
+  --danger:#E5503F; --danger-tint:#FBE7E3; --blue:#3B7BB8; --blue-tint:#E8F0FA;
+  --r-sm:10px; --r-md:14px; --r-lg:18px; --r-xl:26px;
+  --ease:cubic-bezier(.22,.61,.36,1); --press:.14s var(--ease);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{font-family:"Microsoft YaHei","PingFang SC","Segoe UI",sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:26px 16px;}
+.page-head{text-align:center;margin-bottom:16px;}
+.page-head h1{font-size:21px;font-weight:800;color:var(--secondary-deep);}
+.page-head p{margin-top:6px;font-size:12.5px;color:var(--text-2);}
+.badges{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px;}
+.badges span{font-size:11px;background:var(--surface);border:1px solid var(--border);color:var(--text-2);border-radius:999px;padding:4px 11px;}
+.badges span b{color:var(--primary);}
+
+.phone{position:relative;width:391px;height:812px;background:#000;border-radius:50px;padding:9px;box-shadow:0 26px 60px rgba(10,40,24,.30);flex:none;}
+.screen{position:relative;width:100%;height:100%;border-radius:42px;overflow:hidden;background:var(--bg);}
+.statusbar{position:absolute;top:0;left:0;right:0;height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;color:#fff;font-size:13px;font-weight:700;z-index:20;pointer-events:none;}
+.statusbar .r{display:flex;gap:6px;align-items:center;}
+
+/* 顶部 hero */
+.hero{position:relative;padding:52px 20px 50px;background:linear-gradient(135deg,#0A5532,#15854F);color:#fff;border-radius:0 0 26px 26px;}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:26px;background:var(--bg);border-radius:26px 26px 0 0;}
+.hero .hrow{display:flex;align-items:flex-start;justify-content:space-between;position:relative;z-index:1;}
+.hero .ht{font-size:21px;font-weight:800;}
+.hero .hs{margin-top:5px;font-size:12px;color:#D7ECDF;}
+.staff{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:5px 11px 5px 6px;}
+.staff .av{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.28);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;}
+.staff .sn{font-size:11.5px;font-weight:700;}
+
+/* 内容滚动区 */
+.views{position:absolute;top:132px;left:0;right:0;bottom:84px;overflow:hidden;}
+.view{display:none;height:100%;overflow-y:auto;padding:0 16px 24px;}
+.view.active{display:block;}
+.view::-webkit-scrollbar{display:none;}
+
+/* 卡片 */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:15px;box-shadow:0 6px 16px rgba(20,50,32,.05);margin-bottom:14px;}
+.ctitle{font-size:14.5px;font-weight:800;display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;}
+.ctitle .more{font-size:11px;font-weight:400;color:var(--text-3);}
+
+/* seg */
+.seg{display:flex;background:#E6E1D1;border-radius:12px;padding:3px;margin-bottom:14px;}
+.seg .si{flex:1;text-align:center;font-size:13px;font-weight:700;color:var(--text-2);padding:8px 0;border-radius:9px;cursor:pointer;transition:.15s;}
+.seg .si.on{background:var(--surface);color:var(--primary);box-shadow:0 1px 4px rgba(0,0,0,.08);}
+
+/* KPI */
+.kpi{display:flex;gap:12px;}
+.kpi .kbox{flex:1;}
+.kpi .kl{font-size:11.5px;color:var(--text-2);}
+.kpi .kv{font-size:30px;font-weight:900;color:var(--primary);line-height:1.1;margin:4px 0 2px;}
+.kpi .kv small{font-size:13px;font-weight:700;color:var(--text-3);}
+.kpi .kd{font-size:11px;color:var(--warn);font-weight:700;}
+.capbar{margin-top:12px;}
+.capbar .cap-row{display:flex;justify-content:space-between;font-size:11px;color:var(--text-2);margin-bottom:5px;}
+.capbar .track{height:9px;border-radius:99px;background:#EAE5D6;overflow:hidden;}
+.capbar .fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#2FA36B,#EFA63A);}
+
+/* banner */
+.banner{display:flex;gap:10px;align-items:center;border-radius:14px;padding:12px 13px;margin-bottom:14px;font-size:12.5px;line-height:1.5;}
+.banner .bi{width:30px;height:30px;flex:none;border-radius:9px;display:flex;align-items:center;justify-content:center;}
+.banner.warn{background:var(--warn-tint);border:1px solid #F0D08A;color:#8a5a12;}
+.banner.warn .bi{background:#F6DFA8;}
+.banner.info{background:var(--blue-tint);border:1px solid #BFD6EC;color:#2c5d8c;}
+.banner.info .bi{background:#CFE0F2;}
+
+/* 分区行 */
+.zone{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--border);}
+.zone:last-child{border-bottom:none;}
+.dot{width:10px;height:10px;border-radius:50%;flex:none;}
+.dot.ok{background:var(--ok);} .dot.warn{background:var(--warn);} .dot.danger{background:var(--danger);}
+.zone .zn{flex:1;}
+.zone .zn b{font-size:13.5px;}
+.zone .zn small{display:block;font-size:11px;color:var(--text-3);margin-top:2px;}
+.zone .zc{font-size:13px;font-weight:800;color:var(--text-2);}
+.tag{font-size:10.5px;font-weight:800;border-radius:999px;padding:3px 9px;}
+.tag.ok{background:var(--ok-tint);color:var(--secondary-deep);}
+.tag.warn{background:var(--warn-tint);color:#9a6a10;}
+.tag.danger{background:var(--danger-tint);color:#B23428;}
+.tag.grey{background:#EFECE2;color:var(--text-2);}
+
+/* 设备行 */
+.dev{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--border);}
+.dev:last-child{border-bottom:none;}
+.dev .di{width:34px;height:34px;flex:none;border-radius:10px;background:var(--primary-tint);display:flex;align-items:center;justify-content:center;}
+.dev .di.b{background:#F3E6D6;}
+.dev .dt{flex:1;}
+.dev .dt b{font-size:13px;}
+.dev .dt small{display:block;font-size:11px;color:var(--text-3);margin-top:2px;}
+
+/* 全线各站列表 */
+.line-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.line-row:last-child{border-bottom:none;}
+.line-row .nm{flex:1;font-size:13px;font-weight:700;}
+.line-row .nm small{display:block;font-size:10.5px;color:var(--text-3);font-weight:400;margin-top:2px;}
+
+/* 预警模板 5 类 */
+.tpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.tpl{border:1.5px solid;border-radius:16px;padding:13px 11px;text-align:center;cursor:pointer;transition:.15s;background:var(--surface);}
+.tpl:active{transform:scale(.97);}
+.tpl .ti{width:40px;height:40px;border-radius:12px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;}
+.tpl b{font-size:13.5px;display:block;}
+.tpl small{font-size:10px;color:var(--text-3);display:block;margin-top:3px;line-height:1.4;}
+.tpl.c1{border-color:#F2B4AC;background:var(--danger-tint);} .tpl.c1 .ti{background:var(--danger);}
+.tpl.c2{border-color:#EFC79A;background:var(--accent-tint);} .tpl.c2 .ti{background:var(--accent);}
+.tpl.c3{border-color:#BFD6EC;background:var(--blue-tint);} .tpl.c3 .ti{background:var(--blue);}
+.tpl.c4{border-color:#9FCDB3;background:var(--secondary-tint);} .tpl.c4 .ti{background:var(--secondary);}
+.tpl.c5{border-color:#E6D09A;background:var(--gold-tint);} .tpl.c5 .ti{background:var(--gold);}
+.tpl.full{grid-column:span 2;display:flex;align-items:center;text-align:left;gap:12px;padding:13px;}
+.tpl.full .ti{margin:0;} .tpl.full b{font-size:14px;} .tpl.full small{margin-top:3px;}
+
+/* 工单 */
+.order{border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:10px;background:var(--surface);}
+.order .orow{display:flex;align-items:center;gap:10px;}
+.order .oi{width:36px;height:36px;border-radius:10px;flex:none;background:var(--accent-tint);display:flex;align-items:center;justify-content:center;}
+.order .ot{flex:1;}
+.order .ot b{font-size:13.5px;}
+.order .ot small{display:block;font-size:11px;color:var(--text-3);margin-top:3px;}
+.order .oph{width:64px;height:30px;border:none;border-radius:9px;background:var(--primary);color:#fff;font-size:12px;font-weight:700;cursor:pointer;flex:none;}
+.order.done{background:#F6F4EC;}
+.order.done .oph{background:#C7C2B3;color:#fff;}
+.order .thumb{margin-top:10px;width:72px;height:52px;border-radius:9px;background:repeating-linear-gradient(45deg,#ECE7D8,#ECE7D8 8px,#E2DCC8 8px,#E2DCC8 16px);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:#9a978d;font-size:18px;}
+
+/* 设备开关 */
+.switch{width:52px;height:29px;border-radius:99px;background:#C9C3B0;position:relative;cursor:pointer;flex:none;transition:.2s;}
+.switch i{position:absolute;top:3px;left:3px;width:23px;height:23px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.switch.on{background:var(--primary);}
+.switch.on i{left:26px;}
+
+/* 记录统计 */
+.stat3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+.stat3 .s{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px;text-align:center;}
+.stat3 .s .n{font-size:22px;font-weight:900;color:var(--primary);}
+.stat3 .s .l{font-size:11px;color:var(--text-2);margin-top:3px;}
+
+/* 筛选 chips */
+.chips{display:flex;gap:7px;overflow-x:auto;margin-bottom:12px;}
+.chips::-webkit-scrollbar{display:none;}
+.chip{font-size:11.5px;font-weight:700;color:var(--text-2);background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:6px 13px;white-space:nowrap;cursor:pointer;}
+.chip.on{background:var(--primary);color:#fff;border-color:var(--primary);}
+
+/* 台账行 */
+.log{display:flex;gap:11px;padding:11px 0;border-bottom:1px solid var(--border);}
+.log:last-child{border-bottom:none;}
+.log .lt{width:70px;flex:none;}
+.log .lt .d{font-size:11px;color:var(--text-3);}
+.log .lt .t{font-size:13px;font-weight:800;color:var(--text);}
+.log .lc{flex:1;}
+.log .lc b{font-size:13px;}
+.log .lc small{display:block;font-size:11px;color:var(--text-3);margin-top:3px;}
+.btn-outline{width:100%;height:46px;border:2px solid var(--primary);background:var(--surface);color:var(--primary);border-radius:14px;font-size:14px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
+
+/* 折线图 */
+.chart-wrap{width:100%;}
+.chart-wrap .peak{display:flex;justify-content:space-between;font-size:11px;color:var(--text-2);margin-bottom:6px;}
+.chart-wrap .peak b{color:var(--danger);}
+
+/* 底部 tab */
+.tabbar{position:absolute;left:0;right:0;bottom:0;height:84px;background:var(--surface);border-top:1px solid var(--border);border-radius:24px 24px 0 0;display:flex;box-shadow:0 -6px 20px rgba(20,50,32,.06);z-index:15;}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--text-3);font-size:11px;font-weight:700;cursor:pointer;}
+.tab svg{width:26px;height:26px;}
+.tab.on{color:var(--primary);}
+
+/* 弹层 */
+.overlay{position:absolute;inset:0;background:rgba(20,35,26,.45);z-index:50;display:none;align-items:flex-end;}
+.overlay.show{display:flex;}
+.sheet{width:100%;background:var(--surface);border-radius:26px 26px 0 0;padding:22px 20px 30px;max-height:82%;overflow-y:auto;animation:up .25s ease;}
+@keyframes up{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.sheet .grab{width:40px;height:4px;border-radius:2px;background:#D8D2C0;margin:0 auto 16px;}
+.sheet h3{font-size:17px;font-weight:800;margin-bottom:4px;}
+.sheet .sub{font-size:12px;color:var(--text-2);margin-bottom:16px;line-height:1.6;}
+.field{margin-bottom:14px;}
+.field label{font-size:12px;font-weight:700;color:var(--text-2);display:block;margin-bottom:7px;}
+.field select{width:100%;height:44px;border:1.5px solid var(--border);border-radius:12px;background:#fff;padding:0 12px;font-size:14px;color:var(--text);font-family:inherit;}
+.preview{background:var(--bg);border:1px dashed #C9C3B0;border-radius:13px;padding:13px;font-size:12.5px;line-height:1.7;color:var(--text);}
+.preview .ml{margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);color:var(--text-2);}
+.sheet-btns{display:flex;gap:10px;margin-top:18px;}
+.sheet-btns button{flex:1;height:48px;border-radius:13px;font-size:15px;font-weight:800;cursor:pointer;border:none;font-family:inherit;}
+.btn-cancel{background:#ECE7D8;color:var(--text-2);}
+.btn-publish{background:var(--primary);color:#fff;}
+.btn-publish.danger{background:var(--danger);}
+
+/* toast */
+.toast{position:absolute;left:50%;top:120px;transform:translateX(-50%) translateY(-20px);background:rgba(20,40,28,.92);color:#fff;font-size:13px;font-weight:700;padding:11px 18px;border-radius:999px;z-index:60;opacity:0;transition:.25s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ===== 视觉与交互精修增强（不改变布局 / 信息架构） ===== */
+/* 数字等宽对齐：KPI、人数、分钟刷新时不跳动 */
+.bignum,.kpi .v,.mini .v,.rec-row b,.oph,.ml,#prevZh{font-variant-numeric:tabular-nums;}
+/* 统一可点击元素的过渡曲线与按压反馈 */
+.tabbar .tab,.seg .si,.chip,.switch,.oph,.btn-outline,.btn-cancel,.btn-publish,.tpl{
+  transition:transform var(--press),background var(--press),box-shadow var(--press),border-color var(--press),color var(--press);}
+.oph:active,.btn-outline:active,.btn-cancel:active,.btn-publish:active,.chip:active,.seg .si:active{transform:scale(.96);}
+.tpl:active{transform:scale(.985);}
+.tabbar .tab:active{transform:scale(.94);}
+.switch:active{transform:scale(.9);}
+/* 键盘可达：统一焦点环 */
+:focus-visible{outline:2px solid var(--primary-2);outline-offset:2px;border-radius:6px;}
+/* 长文本自然换行，避免生硬断行 */
+.sub,.rec-row .sub,.preview .ml,#prevZh{text-wrap:pretty;}
+/* 小尺寸筛选补足最小点击高度 */
+.chip{min-height:32px;display:inline-flex;align-items:center;}
+/* 尊重系统减少动效偏好 */
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;}}
+</style>
+</head>
+<body>
+<div class="page-head">
+  <h1>站务端 · 独立权限小程序（可点击演示）</h1>
+  <p>看客流 · 发预警 · 留台账　|　数据只读对接 AFC / BAS / PIS，站务人工增量发布（客流为情景示例数据）</p>
+  <div class="badges">
+    <span>青岛地铁深绿 <b>#0B6B3F</b></span><span>米白 <b>#F2EEE1</b></span><span>独立权限 · 可点击</span><span>3 大模块</span>
+  </div>
+</div>
+
+<div class="phone">
+  <div class="screen">
+    <div class="statusbar"><span>9:41</span><span class="r">●●● 5G ▮</span></div>
+
+    <!-- 顶部 -->
+    <div class="hero">
+      <div class="hrow">
+        <div>
+          <div class="ht">站务工作台</div>
+          <div class="hs">五四广场站 · 数据更新 14:32</div>
+        </div>
+        <div class="staff"><span class="av">张</span><span class="sn">值班 张工</span></div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- 三页 -->
+    <div class="views">
+
+      <!-- ① 本站总览 -->
+      <div class="view active" id="v-home">
+        <div class="seg">
+          <div class="si on" data-line="self">本站</div>
+          <div class="si" data-line="all">全线（2/3 号线）</div>
+        </div>
+
+        <!-- 本站视图 -->
+        <div class="line-self">
+          <div class="card">
+            <div class="kpi">
+              <div class="kbox">
+                <div class="kl">当前站内人数</div>
+                <div class="kv">1,286<small> 人</small></div>
+                <div class="kd">较上一时段 +12%</div>
+              </div>
+              <div class="kbox" style="text-align:right;">
+                <div class="kl">阈值容量</div>
+                <div class="kv" style="color:var(--warn);">70%</div>
+                <div class="kd" style="color:var(--text-3);">阈值 1500 人</div>
+              </div>
+            </div>
+            <div class="capbar">
+              <div class="cap-row"><span>客流分级</span><span style="color:var(--warn);font-weight:800;">较拥挤</span></div>
+              <div class="track"><div class="fill" style="width:70%;"></div></div>
+            </div>
+          </div>
+
+          <div class="banner warn">
+            <div class="bi">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9a6a10" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+            </div>
+            <div><b>阈值自动预警</b><br>2 号线站台人流接近阈值，系统已自动向乘客端推送"较拥挤"提示。</div>
+          </div>
+
+          <div class="card">
+            <div class="ctitle">分区客流 <span class="more">AFC 闸机计数 · 1–5 分钟</span></div>
+            <div class="zone"><span class="dot danger"></span><div class="zn"><b>2 号线站台</b><small>接近阈值 · 建议引导</small></div><span class="tag danger">很挤 420</span></div>
+            <div class="zone"><span class="dot ok"></span><div class="zn"><b>3 号线站台</b><small>正常</small></div><span class="tag ok">畅通 380</span></div>
+            <div class="zone"><span class="dot warn"></span><div class="zn"><b>换乘通道</b><small>人流上升</small></div><span class="tag warn">较挤 260</span></div>
+            <div class="zone"><span class="dot ok"></span><div class="zn"><b>A 站厅 / 出入口</b><small>正常</small></div><span class="tag ok">畅通 226</span></div>
+          </div>
+
+          <div class="card">
+            <div class="ctitle">设备状态 <span class="more">BAS</span></div>
+            <div class="dev">
+              <div class="di b"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B2632A" stroke-width="2"><path d="M3 12h4l2 6 4-14 2 8h6"/></svg></div>
+              <div class="dt"><b>3 号线上行扶梯</b><small>检修中 · 已通知乘客走电梯</small></div>
+              <span class="tag warn">检修</span>
+            </div>
+            <div class="dev">
+              <div class="di"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0B6B3F" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 7h6M9 11h6M9 15h3"/></svg></div>
+              <div class="dt"><b>无障碍电梯</b><small>A 站厅中部 · 运行中</small></div>
+              <span class="tag ok">运行</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 全线视图 -->
+        <div class="line-all" style="display:none;">
+          <div class="card">
+            <div class="ctitle">全线车站客流 <span class="more">2 / 3 号线</span></div>
+            <div class="line-row"><span class="dot danger"></span><span class="nm">五四广场站<small>换乘站 · 70%</small></span><span class="tag danger">很挤</span></div>
+            <div class="line-row"><span class="dot warn"></span><span class="nm">青岛站<small>火车站枢纽 · 64%</small></span><span class="tag warn">较挤</span></div>
+            <div class="line-row"><span class="dot ok"></span><span class="nm">李村站<small>42%</small></span><span class="tag ok">畅通</span></div>
+            <div class="line-row"><span class="dot ok"></span><span class="nm">麦岛站<small>31%</small></span><span class="tag ok">畅通</span></div>
+            <div class="line-row"><span class="dot warn"></span><span class="nm">青岛北站<small>高铁到达 · 58%</small></span><span class="tag warn">较挤</span></div>
+            <div class="line-row"><span class="dot ok"></span><span class="nm">太平角公园站<small>22%</small></span><span class="tag ok">畅通</span></div>
+          </div>
+          <div class="banner info">
+            <div class="bi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2c5d8c" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg></div>
+            <div><b>全线调度提示</b><br>青岛北站高铁集中到达，预计 30 分钟后本线客流上行，可提前准备。</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ② 本站管理 -->
+      <div class="view" id="v-manage">
+        <div class="card">
+          <div class="ctitle">一键发布预警 <span class="more">自动多语 · 同步乘客端</span></div>
+          <div class="tpl-grid">
+            <div class="tpl c1" data-tpl="客流拥挤" data-zone="2 号线站台" data-color="danger">
+              <div class="ti"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg></div>
+              <b>客流拥挤</b><small>提示绕行/等待</small>
+            </div>
+            <div class="tpl c2" data-tpl="设备故障" data-zone="上行扶梯" data-color="danger">
+              <div class="ti"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-2.4 2.6-2.6z"/></svg></div>
+              <b>设备故障</b><small>扶梯/电梯/闸机</small>
+            </div>
+            <div class="tpl c3" data-tpl="出口封闭" data-zone="C 出口" data-color="danger">
+              <div class="ti"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M6 6l12 12"/></svg></div>
+              <b>出口封闭</b><small>引导改走其他口</small>
+            </div>
+            <div class="tpl c4" data-tpl="乘客求助" data-zone="A 站厅" data-color="danger">
+              <div class="ti"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 10h.01M15 10h.01M8.5 15a5 5 0 0 0 7 0"/></svg></div>
+              <b>乘客求助</b><small>老人/迷路/物品</small>
+            </div>
+            <div class="tpl c5 full" data-tpl="大客流限流" data-zone="全站" data-color="danger">
+              <div class="ti"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></svg></div>
+              <div><b>大客流限流</b><small>启动分流预案，乘客端 + 站厅导视屏同步提示</small></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="ctitle">待办工单 <span class="more" id="orderCount">乘客/巡检上报 · 2 条</span></div>
+          <div class="order" data-order>
+            <div class="orow">
+              <div class="oi"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#B2632A" stroke-width="2"><path d="M12 3v13M6 11l6 6 6-6M5 21h14"/></svg></div>
+              <div class="ot"><b>地面湿滑</b><small>A 站厅中部 · 14:18 · 乘客拍照上报</small></div>
+              <button class="oph">接单</button>
+            </div>
+            <div class="thumb">▣</div>
+          </div>
+          <div class="order" data-order>
+            <div class="orow">
+              <div class="oi"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#B2632A" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 12h6M7 8h10M7 16h4"/></svg></div>
+              <div class="ot"><b>闸机刷卡异常</b><small>B 口 3 号闸机 · 13:55 · 自动派单</small></div>
+              <button class="oph">接单</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="ctitle">设备状态 <span class="more">手动切换 · 同步乘客端</span></div>
+          <div class="dev">
+            <div class="di b"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B2632A" stroke-width="2"><path d="M3 12h4l2 6 4-14 2 8h6"/></svg></div>
+            <div class="dt"><b>3 号线上行扶梯</b><small class="dev-st">当前：检修中</small></div>
+            <div class="switch" data-dev><i></i></div>
+          </div>
+          <div class="dev">
+            <div class="di"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0B6B3F" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 7h6M9 11h6M9 15h3"/></svg></div>
+            <div class="dt"><b>无障碍电梯</b><small class="dev-st">当前：运行中</small></div>
+            <div class="switch on" data-dev><i></i></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ③ 历史记录 -->
+      <div class="view" id="v-records">
+        <div class="stat3">
+          <div class="s"><div class="n">18</div><div class="l">本周预警</div></div>
+          <div class="s"><div class="n">18</div><div class="l">已处置</div></div>
+          <div class="s"><div class="n">3.2′</div><div class="l">平均响应</div></div>
+        </div>
+
+        <div class="card">
+          <div class="ctitle">峰值客流复盘 <span class="more">今日 · AFC</span></div>
+          <div class="chart-wrap">
+            <div class="peak"><span>峰值 <b>18:20 · 1,640 人</b></span><span>早高峰 8:00</span></div>
+            <svg viewBox="0 0 327 150" width="100%" height="150">
+              <defs><linearGradient id="ar" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#2FA36B" stop-opacity=".35"/><stop offset="100%" stop-color="#2FA36B" stop-opacity="0"/>
+              </linearGradient></defs>
+              <g stroke="#EAE5D6" stroke-width="1">
+                <line x1="0" y1="30" x2="327" y2="30"/><line x1="0" y1="70" x2="327" y2="70"/><line x1="0" y1="110" x2="327" y2="110"/>
+              </g>
+              <path d="M0,128 L30,120 L55,86 L80,62 L105,104 L130,118 L160,112 L190,96 L215,58 L240,24 L265,70 L290,106 L327,120 L327,150 L0,150 Z" fill="url(#ar)"/>
+              <path d="M0,128 L30,120 L55,86 L80,62 L105,104 L130,118 L160,112 L190,96 L215,58 L240,24 L265,70 L290,106 L327,120" fill="none" stroke="#0B6B3F" stroke-width="2.5" stroke-linejoin="round"/>
+              <circle cx="240" cy="24" r="5" fill="#E5503F"/>
+              <circle cx="80" cy="62" r="4" fill="#2FA36B"/>
+              <text x="240" y="15" font-size="10" fill="#B23428" text-anchor="middle" font-weight="700">峰值</text>
+              <g font-size="9" fill="#93A096" text-anchor="middle">
+                <text x="0" y="146">6时</text><text x="80" y="146">8时</text><text x="160" y="146">12时</text><text x="240" y="146">18时</text><text x="320" y="146">23时</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="ctitle">预警台账</div>
+          <div class="chips" id="logChips">
+            <span class="chip on" data-f="全部">全部</span>
+            <span class="chip" data-f="客流">客流</span>
+            <span class="chip" data-f="设备">设备</span>
+            <span class="chip" data-f="求助">求助</span>
+            <span class="chip" data-f="封闭">封闭</span>
+          </div>
+          <div id="logList">
+            <div class="log" data-type="客流"><div class="lt"><span class="d">10-26</span><span class="t">18:20</span></div><div class="lc"><b>客流拥挤 · 2 号线站台</b><small>自动触发 → 人工分流 → 已解除 · 张工</small></div><span class="tag ok">已解除</span></div>
+            <div class="log" data-type="设备"><div class="lt"><span class="d">10-26</span><span class="t">14:02</span></div><div class="lc"><b>设备故障 · 上行扶梯</b><small>切换检修 + 引导电梯 → 已处理 · 张工</small></div><span class="tag ok">已处理</span></div>
+            <div class="log" data-type="求助"><div class="lt"><span class="d">10-26</span><span class="t">09:15</span></div><div class="lc"><b>乘客求助 · A 站厅</b><small>老人迷路 → 引导至客服 → 已闭环</small></div><span class="tag grey">已闭环</span></div>
+            <div class="log" data-type="封闭"><div class="lt"><span class="d">10-25</span><span class="t">17:40</span></div><div class="lc"><b>出口封闭 · C 口</b><small>临时施工 → 多语提示 → 已解除</small></div><span class="tag ok">已解除</span></div>
+            <div class="log" data-type="客流"><div class="lt"><span class="d">10-25</span><span class="t">08:05</span></div><div class="lc"><b>早高峰限流 · 进站闸机</b><small>自动阈值 → 单向放行 → 已解除</small></div><span class="tag ok">已解除</span></div>
+          </div>
+        </div>
+
+        <button class="btn-outline" onclick="showToast('台账已导出（演示）')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0B6B3F" stroke-width="2"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+          导出预警台账（留存备查）
+        </button>
+      </div>
+    </div>
+
+    <!-- 底部 3 tab -->
+    <div class="tabbar">
+      <div class="tab on" data-v="home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12 12 3l9 9"/><path d="M5 10v10h14V10"/></svg>本站总览
+      </div>
+      <div class="tab" data-v="manage">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>本站管理
+      </div>
+      <div class="tab" data-v="records">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-6"/></svg>历史记录
+      </div>
+    </div>
+
+    <!-- 发布弹层 -->
+    <div class="overlay" id="overlay">
+      <div class="sheet">
+        <div class="grab"></div>
+        <h3 id="sheetTitle">发布预警</h3>
+        <div class="sub">选择区域后一键发布，系统自动生成中 / 英 / 日 / 韩 / 俄 五语提示，同步乘客端与站厅导视屏。</div>
+        <div class="field">
+          <label>影响区域</label>
+          <select id="zoneSel">
+            <option>2 号线站台</option><option>3 号线站台</option><option>换乘通道</option>
+            <option>A 站厅</option><option>B 站厅</option><option>C 出口</option><option>全站</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>乘客端文案预览（自动多语）</label>
+          <div class="preview">
+            <div id="prevZh">当前区域客流较拥挤，请耐心等待或按提示绕行。</div>
+            <div class="ml" id="prevEn">This area is a little busy. Please wait or follow the diversion route.</div>
+            <div class="ml" id="prevJa">ただいま混雑しています。案内に従ってお待ちください。</div>
+            <div class="ml" id="prevKo">현재 혼잡합니다. 안내에 따라 우회해 주세요.</div>
+            <div class="ml" id="prevRu">В этой зоне многолюдно. Подождите или следуйте по пути объезда.</div>
+          </div>
+        </div>
+        <div class="sheet-btns">
+          <button class="btn-cancel" onclick="closeSheet()">取消</button>
+          <button class="btn-publish danger" id="publishBtn">确认发布</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// tab 切换
+const tabs=document.querySelectorAll('.tab');
+const views={home:document.getElementById('v-home'),manage:document.getElementById('v-manage'),records:document.getElementById('v-records')};
+function goTab(v){
+  tabs.forEach(x=>x.classList.toggle('on',x.dataset.v===v));
+  Object.values(views).forEach(x=>x.classList.remove('active'));
+  if(views[v])views[v].classList.add('active');
+}
+tabs.forEach(t=>t.addEventListener('click',()=>goTab(t.dataset.v)));
+const _h=(location.hash||'').replace('#','');
+if(views[_h])goTab(_h);
+
+// 全线/本站
+document.querySelectorAll('.seg .si').forEach(s=>s.addEventListener('click',()=>{
+  document.querySelectorAll('.seg .si').forEach(x=>x.classList.remove('on'));s.classList.add('on');
+  const self=document.querySelector('.line-self'),all=document.querySelector('.line-all');
+  if(s.dataset.line==='all'){self.style.display='none';all.style.display='block';}
+  else{self.style.display='block';all.style.display='none';}
+}));
+
+// toast
+let toastTimer;
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),1900);}
+
+// 一键预警
+const TPL_TEXT={
+  '客流拥挤':['当前区域客流较拥挤，请耐心等待或按提示绕行。','This area is a little busy. Please wait or follow the diversion route.','ただいま混雑しています。案内に従ってお待ちください。','현재 혼잡합니다. 안내에 따라 우회해 주세요.','В этой зоне многолюдно. Подождите или следуйте по пути объезда.'],
+  '设备故障':['该处设备检修中，请改乘无障碍电梯，注意安全。','This facility is under maintenance. Please use the accessible elevator.','ただいま点検中です。エレベーターをご利用ください。','점검 중입니다. 엘리베이터를 이용해 주세요.','Идёт техобслуживание. Воспользуйтесь доступным лифтом, соблюдайте осторожность.'],
+  '出口封闭':['该出口临时封闭，请按引导改走其他出口。','This exit is temporarily closed. Please use another exit.','この出口は閉鎖中です。ほかの出口をご利用ください。','이 출구는 폐쇄되었습니다. 다른 출구를 이용해 주세요.','Этот выход временно закрыт. Пожалуйста, используйте другой выход.'],
+  '乘客求助':['如需帮助，请就近联系穿制服的工作人员。','Need help? Please contact the nearest staff in uniform.','お困りの際は、最寄りの係員にお声がけください。','도움이 필요하면 가까운 직원에게 말씀해 주세요.','Если вам нужна помощь, обратитесь к ближайшему сотруднику в униформе.'],
+  '大客流限流':['当前客流较大，正在限流疏导，请按地面指引有序进站。','The station is busy with crowd control. Please follow the floor markings.','ただいま入場制限中です。床の案内に従ってお進みください。','혼잡으로 입장을 제한하고 있습니다. 안내에 따라 주세요.','Введён контроль входа. Проходите организованно по разметке на полу.']
+};
+const overlay=document.getElementById('overlay');
+let curTpl='客流拥挤';
+document.querySelectorAll('.tpl').forEach(t=>t.addEventListener('click',()=>{
+  curTpl=t.dataset.tpl;
+  document.getElementById('sheetTitle').textContent='发布【'+curTpl+'】预警';
+  document.getElementById('zoneSel').value=t.dataset.zone;
+  const tx=TPL_TEXT[curTpl];
+  document.getElementById('prevZh').textContent=tx[0];
+  document.getElementById('prevEn').textContent=tx[1];
+  document.getElementById('prevJa').textContent=tx[2];
+  document.getElementById('prevKo').textContent=tx[3];
+  document.getElementById('prevRu').textContent=tx[4];
+  overlay.classList.add('show');
+}));
+function closeSheet(){overlay.classList.remove('show');}
+overlay.addEventListener('click',e=>{if(e.target===overlay)closeSheet();});
+document.getElementById('publishBtn').addEventListener('click',()=>{
+  const zone=document.getElementById('zoneSel').value;
+  closeSheet();showToast('已发布【'+curTpl+'】至乘客端（'+zone+'），多语同步');
+});
+
+// 工单接单
+document.querySelectorAll('.order').forEach(o=>{
+  const btn=o.querySelector('.oph');
+  btn.addEventListener('click',()=>{
+    if(btn.textContent==='接单'){btn.textContent='处理中';o.classList.add('done');btn.disabled=true;showToast('已接单，请前往处置');updCount();}
+  });
+});
+function updCount(){const left=document.querySelectorAll('.order .oph').length-document.querySelectorAll('.order.done').length;document.getElementById('orderCount').textContent='乘客/巡检上报 · '+left+' 条待办';}
+
+// 设备开关
+document.querySelectorAll('.switch[data-dev]').forEach(sw=>sw.addEventListener('click',()=>{
+  sw.classList.toggle('on');
+  const on=sw.classList.contains('on');
+  sw.closest('.dev').querySelector('.dev-st').textContent='当前：'+(on?'运行中':'检修中');
+  showToast('设备状态已更新，并同步乘客端');
+}));
+
+// 台账筛选
+document.querySelectorAll('#logChips .chip').forEach(c=>c.addEventListener('click',()=>{
+  document.querySelectorAll('#logChips .chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');
+  const f=c.dataset.f;
+  document.querySelectorAll('#logList .log').forEach(l=>{
+    l.style.display=(f==='全部'||l.dataset.type===f)?'flex':'none';
+  });
+}));
+</script>
+</body>
+</html>
